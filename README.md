@@ -41,19 +41,7 @@ MySQL 8.4
    |
    v
 mysql-data PVC
->>    |
->>    v
->> Flask/Gunicorn Backend
->>    |
->>    v
->> DB Service :3306
->>    |
->>    v
->> MySQL 8.4
->>    |
->>    v
->> mysql-data PVC
->>
+```
 The frontend is the only component exposed through an OpenShift Route. The backend and database are reachable only through internal Kubernetes Services.
 
 ## 3. Container images
