@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rahti Guestbook</title>
+</head>
+
+<body>
+    <h1>Rahti Guestbook — Version 1.0.3</h1>
+
+    <form id="message-form">
+        <input
+            type="text"
+            id="message"
+            placeholder="Write a message..."
+            maxlength="255"
+            required
+        >
+        <button type="submit">Add Message</button>
+    </form>
+
+    <p id="status"></p>
+
+    <h2>Messages</h2>
+
+    <ul id="messages"></ul>
+
+    <script>
+        async function loadMessages() {
+            const response = await fetch("/api/messages");
+
+            if (!response.ok) {
+                throw new Error("Failed to load messages");
+            }
+
+            const messages = await response.json();
+
+            const list = document.getElementById("messages");
+            list.innerHTML = "";
+
+            messages.forEach(item => {
+                const li = document.createElement("li");
+
+                li.textContent =
+                    `${item.message} (${item.created_at})`;
+
+                list.appendChild(li);
+            });
+        }
+
+        document
+            .getElementById("message-form")
+            .addEventListener("submit", async event => {
+                event.preventDefault();
+
+                const input = document.getElementById("message");
+                const status = document.getElementById("status");
+
+                const message = input.value.trim();
+
+                if (!message) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch("/api/messages", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            message: message
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(result.error || "Failed to add message");
+                    }
+
+                    input.value = "";
+                    status.textContent = "Message added.";
+
+                    await loadMessages();
+                } catch (error) {
+                    status.textContent = "Error: " + error.message;
+                }
+            });
+
+        loadMessages().catch(error => {
+            document.getElementById("status").textContent =
+                "Error loading messages: " + error.message;
+        });
+    </script>
+</body>
+</html>

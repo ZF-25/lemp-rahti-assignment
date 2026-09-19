@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: zainabf123/lemp-rahti-frontend:1.0.3
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              protocol: TCP

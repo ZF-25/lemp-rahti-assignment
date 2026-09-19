@@ -1,0 +1,16 @@
+.env
+*.env
+*.secret.yaml
+secret.yaml
+
+# Kubernetes/OpenShift generated files
+*.tmp
+
+# Python
+__pycache__/
+*.py[cod]
+
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store

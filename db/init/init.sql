@@ -1,0 +1,19 @@
+USE appdb;
+
+CREATE TABLE IF NOT EXISTS page_views (
+    id INT PRIMARY KEY,
+    view_count INT NOT NULL
+);
+
+INSERT INTO page_views (id, view_count)
+VALUES (1, 0)
+ON DUPLICATE KEY UPDATE id = id;
+
+CREATE TABLE IF NOT EXISTS messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    message VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO messages (message)
+VALUES ('Welcome to the Rahti Guestbook!');
