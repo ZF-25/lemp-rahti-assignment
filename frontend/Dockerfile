@@ -2,6 +2,8 @@ FROM nginx:1.27-alpine
 
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY index.html /usr/share/nginx/html/
+COPY docs.html /usr/share/nginx/html/
+COPY docs-images /usr/share/nginx/html/docs-images/
 
 # Remove the default server configuration.
 RUN rm -f /etc/nginx/conf.d/default.conf \

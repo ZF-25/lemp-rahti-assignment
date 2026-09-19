@@ -1,0 +1,1189 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>LEMP Guestbook - Rahti Documentation</title>
+
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f4f6f8;
+        color: #222;
+        line-height: 1.6;
+      }
+
+      header {
+        background: #1f2937;
+        color: white;
+        padding: 45px 20px;
+      }
+
+      header .container {
+        max-width: 1100px;
+        margin: auto;
+      }
+
+      header h1 {
+        margin: 0 0 10px;
+        font-size: 38px;
+      }
+
+      header p {
+        margin: 5px 0;
+        color: #d1d5db;
+      }
+
+      .container {
+        max-width: 1100px;
+        margin: auto;
+        padding: 0 20px;
+      }
+
+      main {
+        padding: 35px 0 60px;
+      }
+
+      section {
+        background: white;
+        margin-bottom: 28px;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+      }
+
+      h2 {
+        margin-top: 0;
+        color: #1f2937;
+        border-bottom: 2px solid #e5e7eb;
+        padding-bottom: 8px;
+      }
+
+      h3 {
+        color: #374151;
+        margin-top: 28px;
+      }
+
+      a {
+        color: #2563eb;
+      }
+
+      .links {
+        background: #eef2ff;
+        border-left: 5px solid #4f46e5;
+        padding: 18px 20px;
+        margin: 20px 0;
+      }
+
+      .architecture {
+        background: #111827;
+        color: #f9fafb;
+        padding: 25px;
+        border-radius: 8px;
+        overflow-x: auto;
+        font-family: Consolas, "Courier New", monospace;
+        white-space: pre;
+        line-height: 1.5;
+      }
+
+      .info {
+        background: #f9fafb;
+        border-left: 4px solid #6b7280;
+        padding: 15px 18px;
+        margin: 18px 0;
+      }
+
+      .success {
+        background: #ecfdf5;
+        border-left: 4px solid #10b981;
+        padding: 15px 18px;
+        margin: 18px 0;
+      }
+
+      .warning {
+        background: #fffbeb;
+        border-left: 4px solid #f59e0b;
+        padding: 15px 18px;
+        margin: 18px 0;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+
+      th,
+      td {
+        border: 1px solid #d1d5db;
+        padding: 10px 12px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #f3f4f6;
+      }
+
+      figure {
+        margin: 28px 0;
+      }
+
+      figure img {
+        display: block;
+        width: 100%;
+        max-width: 1000px;
+        height: auto;
+        margin: auto;
+        border: 1px solid #d1d5db;
+        border-radius: 7px;
+      }
+
+      figcaption {
+        margin-top: 9px;
+        text-align: center;
+        color: #555;
+        font-size: 14px;
+      }
+
+      .two-column {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+
+      .card {
+        background: #f9fafb;
+        padding: 18px;
+        border-radius: 8px;
+        border: 1px solid #e5e7eb;
+      }
+
+      code {
+        background: #f3f4f6;
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-family: Consolas, "Courier New", monospace;
+      }
+
+      pre {
+        background: #111827;
+        color: #f9fafb;
+        padding: 18px;
+        border-radius: 7px;
+        overflow-x: auto;
+      }
+
+      ul {
+        padding-left: 25px;
+      }
+
+      footer {
+        text-align: center;
+        color: #6b7280;
+        padding: 30px 20px 50px;
+      }
+
+      @media (max-width: 750px) {
+        header h1 {
+          font-size: 30px;
+        }
+
+        section {
+          padding: 20px;
+        }
+
+        .two-column {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <div class="container">
+        <h1>LEMP Guestbook on CSC Rahti</h1>
+        <p>Cloud Services Assignment - Documentation</p>
+        <p>
+          Three-tier application converted from Docker Compose to
+          Kubernetes/OpenShift on Rahti.
+        </p>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- 1. PROJECT DESCRIPTION -->
+
+      <section>
+        <h2>1. Project description</h2>
+
+        <p>
+          This project is a small three-tier guestbook application that I
+          originally had running with Docker Compose. For this assignment I
+          moved the application to CSC Rahti using Kubernetes/OpenShift
+          resources.
+        </p>
+
+        <p>The application has three main parts:</p>
+
+        <ul>
+          <li>
+            <strong>Frontend:</strong> Nginx serving the guestbook webpage.
+          </li>
+          <li><strong>Backend:</strong> Flask/Gunicorn REST API.</li>
+          <li>
+            <strong>Database:</strong> MySQL 8.4 storing the guestbook messages.
+          </li>
+        </ul>
+
+        <p>
+          The main requirement was that only the frontend should be accessible
+          from the Internet. The backend and database should stay inside the
+          Rahti network.
+        </p>
+
+        <div class="links">
+          <strong>Running application:</strong><br />
+          <a
+            href="http://frontend-cloud-services-assignment4.2.rahtiapp.fi"
+            target="_blank"
+          >
+            http://frontend-cloud-services-assignment4.2.rahtiapp.fi
+          </a>
+          <br /><br />
+
+          <strong>GitHub repository:</strong><br />
+          <a
+            href="https://github.com/ZF-25/lemp-rahti-assignment"
+            target="_blank"
+          >
+            https://github.com/ZF-25/lemp-rahti-assignment
+          </a>
+        </div>
+      </section>
+
+      <!-- 2. ARCHITECTURE -->
+
+      <section>
+        <h2>2. Application architecture</h2>
+
+        <p>
+          I kept the same basic three-tier idea from the Docker Compose version,
+          but the way the containers are deployed and connected is different in
+          Rahti.
+        </p>
+
+        <div class="architecture">
+          Internet | v OpenShift Route | v Frontend Service :80 | v Nginx
+          Frontend :8080 | | /api/* v Backend Service :8000 | v Flask/Gunicorn
+          Backend | v DB Service :3306 | v MySQL 8.4 | v mysql-data PVC
+        </div>
+
+        <p>
+          The frontend is the only component exposed through an OpenShift Route.
+          The backend Service and database Service are ClusterIP Services, so
+          they are intended for internal communication inside the Rahti project.
+        </p>
+
+        <p>
+          The frontend sends API requests to <code>/api/messages</code>. Nginx
+          forwards these requests to the backend Service. The Flask backend then
+          connects to MySQL through the <code>db</code> Service.
+        </p>
+
+        <figure>
+          <img
+            src="docs-images/11-final-resources.png"
+            alt="Final Deployments, Services, Route and PVC"
+          />
+          <figcaption>
+            Figure 1 - Final Rahti resources showing the three Deployments,
+            internal Services, public frontend Route and MySQL PVC.
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- 3. CONTAINER IMAGES AND CONFIGURATION -->
+
+      <section>
+        <h2>3. Container images and configuration</h2>
+
+        <p>
+          The frontend and backend images are stored in Docker Hub. MySQL uses
+          the official MySQL image.
+        </p>
+
+        <table>
+          <tr>
+            <th>Component</th>
+            <th>Image</th>
+          </tr>
+          <tr>
+            <td>Backend</td>
+            <td><code>zainabf123/lemp-rahti-backend:1.0.0</code></td>
+          </tr>
+          <tr>
+            <td>Frontend</td>
+            <td><code>zainabf123/lemp-rahti-frontend:1.0.3</code></td>
+          </tr>
+          <tr>
+            <td>Database</td>
+            <td><code>mysql:8.4</code></td>
+          </tr>
+        </table>
+
+        <p>
+          I used Kubernetes/OpenShift Deployments for the containers and
+          Services for communication between the application components.
+        </p>
+
+        <p>
+          The Kubernetes configuration is kept in the
+          <code>k8s</code> directory. This includes the Deployments, Services,
+          Route, ConfigMaps and PVC.
+        </p>
+
+        <figure>
+          <img
+            src="docs-images/13-k8s-manifests.png"
+            alt="Kubernetes and OpenShift manifest files"
+          />
+          <figcaption>
+            Figure 2 - Kubernetes/OpenShift manifest files stored in the
+            project.
+          </figcaption>
+        </figure>
+      </section>
+
+      <!-- 4. CONFIGMAP AND SECRET -->
+
+      <section>
+        <h2>4. ConfigMap and Secret</h2>
+
+        <p>
+          I used a ConfigMap for normal application configuration and a Secret
+          for database passwords.
+        </p>
+
+        <p>The ConfigMap contains values such as:</p>
+
+        <ul>
+          <li>Database host: <code>db</code></li>
+          <li>Database name: <code>appdb</code></li>
+          <li>Database user: <code>appuser</code></li>
+        </ul>
+
+        <p>
+          These values are not passwords, so they can be stored in a ConfigMap.
+          Database passwords are different because they are credentials and
+          should not be stored directly in the application configuration or Git
+          repository.
+        </p>
+
+        <p>
+          The repository contains a <code>secret-example.yaml</code> file with
+          placeholder values. The real Secret is created separately in Rahti and
+          is not committed to Git.
+        </p>
+
+        <div class="warning">
+          <strong>Security:</strong>
+          The real database credentials are not stored in the GitHub repository.
+          The <code>.env</code> file is also ignored by Git.
+        </div>
+      </section>
+
+      <!-- 5. END TO END -->
+
+      <section>
+        <h2>5. End-to-end application functionality</h2>
+
+        <p>
+          The application was tested through the public Rahti Route. The browser
+          loads the Nginx frontend, and the frontend calls the backend REST API.
+          The backend then reads and writes data in MySQL.
+        </p>
+
+        <p>The request path is:</p>
+
+        <pre>
+Browser
+    |
+    v
+OpenShift Route
+    |
+    v
+Frontend Service
+    |
+    v
+Nginx frontend
+    |
+    v
+Backend Service
+    |
+    v
+Flask/Gunicorn backend
+    |
+    v
+DB Service
+    |
+    v
+MySQL</pre
+        >
+
+        <figure>
+          <img
+            src="docs-images/01-application-working.png"
+            alt="Working Rahti Guestbook application"
+          />
+          <figcaption>
+            Figure 3 - The guestbook running through the public Rahti Route. The
+            page displays messages stored by the application.
+          </figcaption>
+        </figure>
+
+        <figure>
+          <img
+            src="docs-images/02-api-200.png"
+            alt="Public API returning HTTP 200"
+          />
+          <figcaption>
+            Figure 4 - The public <code>/api/messages</code> request returned
+            HTTP 200 and JSON containing the stored messages.
+          </figcaption>
+        </figure>
+
+        <p>
+          This was important because it shows that the frontend is not just
+          displaying hard-coded text. It is getting data through the backend
+          API.
+        </p>
+      </section>
+
+      <!-- 6. DATABASE READ -->
+
+      <section>
+        <h2>6. Database read operation</h2>
+
+        <p>
+          The assignment requires at least one database read operation. I tested
+          this directly against MySQL using a SQL query.
+        </p>
+
+        <p>
+          One of the queries was <code>SELECT NOW();</code>, which asks MySQL
+          for its current server time. I also queried the application tables.
+        </p>
+
+        <figure>
+          <img
+            src="docs-images/03-database-read.png"
+            alt="MySQL database read using SELECT NOW"
+          />
+          <figcaption>
+            Figure 5 - MySQL database read using a SQL query. The result comes
+            directly from the running MySQL server.
+          </figcaption>
+        </figure>
+
+        <p>
+          The guestbook also reads the stored messages from the
+          <code>messages</code>
+          table. These results are returned by the backend API and then
+          displayed in the frontend.
+        </p>
+      </section>
+
+      <!-- 7. DATABASE WRITE -->
+
+      <section>
+        <h2>7. Database write operation</h2>
+
+        <p>
+          For the database write operation I used the guestbook message feature.
+          A message can be entered in the frontend and submitted using the
+          <strong>Add Message</strong> button.
+        </p>
+
+        <p>
+          The backend receives the request and inserts the message into the
+          MySQL
+          <code>messages</code> table. After that, the frontend can request the
+          messages again and display the new record.
+        </p>
+
+        <figure>
+          <img
+            src="docs-images/03-database-read-write.png"
+            alt="Guestbook messages stored in MySQL"
+          />
+          <figcaption>
+            Figure 6 - The MySQL <code>messages</code> table contains the
+            guestbook entries, including the message added through the
+            application.
+          </figcaption>
+        </figure>
+
+        <p>
+          This demonstrates both sides of the requirement: the application
+          writes data to MySQL and later reads the same data back through the
+          REST API.
+        </p>
+
+        <div class="success">
+          <strong>End-to-end result:</strong>
+          Frontend → Backend REST API → MySQL write/read → Backend response →
+          Frontend display.
+        </div>
+      </section>
+
+      <!-- 8. DATABASE PERSISTENCE -->
+
+      <section>
+        <h2>8. Database persistence</h2>
+
+        <p>
+          MySQL uses a PersistentVolumeClaim called <code>mysql-data</code>. The
+          PVC is mounted to the MySQL data directory, so the database files are
+          stored outside the lifecycle of an individual MySQL Pod.
+        </p>
+
+        <p>
+          The PVC is 1 GiB, uses ReadWriteOnce access, and is bound to storage
+          provided by the Rahti cluster.
+        </p>
+
+        <figure>
+          <img
+            src="docs-images/04-database-persistence-before.png"
+            alt="Database Pod and PVC before replacement"
+          />
+          <figcaption>
+            Figure 7 - The original MySQL Pod was running and the
+            <code>mysql-data</code> PVC was Bound before the persistence test.
+          </figcaption>
+        </figure>
+
+        <h3>Persistence experiment</h3>
+
+        <p>
+          To test persistence, I first checked that the database contained the
+          guestbook messages. I then deleted the MySQL Pod manually.
+        </p>
+
+        <figure>
+          <img
+            src="docs-images/05-database-persistence-after.png"
+            alt="Replacement MySQL Pod running"
+          />
+          <figcaption>
+            Figure 8 - After deleting the original MySQL Pod, a new MySQL Pod
+            was created by the Deployment.
+          </figcaption>
+        </figure>
+
+        <p>
+          The new Pod mounted the same PVC. I then checked the database again.
+          The previously stored messages were still there.
+        </p>
+
+        <figure>
+          <img
+            src="docs-images/06-persistence-data.png"
+            alt="Database data after MySQL Pod replacement"
+          />
+          <figcaption>
+            Figure 9 - The guestbook messages are still present after the MySQL
+            Pod was replaced, and the PVC is still Bound.
+          </figcaption>
+        </figure>
+
+        <div class="success">
+          <strong>Result:</strong>
+          The database data survived the Pod replacement, which confirms that
+          the application is using persistent storage rather than storing the
+          database only inside the Pod filesystem.
+        </div>
+
+        <h3>Rahti persistence compared with Docker Compose</h3>
+
+        <p>
+          In Docker Compose, the database can use a Docker volume that is
+          managed by Docker on the host. In Rahti, the database uses a
+          Kubernetes PersistentVolumeClaim. The PVC requests persistent storage
+          from the cluster and is mounted into the MySQL Pod.
+        </p>
+
+        <p>
+          The main difference is that in Rahti the storage is managed as a
+          separate Kubernetes resource instead of simply being a local Docker
+          volume attached to a Compose container.
+        </p>
+      </section>
+
+      <!-- 9. POD RECOVERY -->
+
+      <section>
+        <h2>9. Pod recovery experiment</h2>
+
+        <p>I tested what happens when a backend Pod is manually deleted.</p>
+
+        <p>
+          The backend Deployment was configured with one replica. I deleted the
+          running backend Pod manually. OpenShift then created another Pod to
+          maintain the desired number of replicas.
+        </p>
+
+        <figure>
+          <img
+            src="docs-images/07-backend-recovery.png"
+            alt="Backend Pod deleted and replaced"
+          />
+          <figcaption>
+            Figure 10 - The original backend Pod was deleted and a new backend
+            Pod was automatically created and reached Running status.
+          </figcaption>
+        </figure>
+
+        <p>
+          The reason this happens is that the Deployment manages a ReplicaSet.
+          The ReplicaSet makes sure that the desired number of Pods exists. If a
+          Pod disappears, the ReplicaSet creates a replacement.
+        </p>
+
+        <p>
+          This is one of the main differences from manually running containers.
+          Instead of me having to start the replacement container myself, the
+          Kubernetes/OpenShift controller handles it.
+        </p>
+      </section>
+
+      <!-- 10. SCALING -->
+
+      <section>
+        <h2>10. Scaling the backend</h2>
+
+        <p>
+          I also tested horizontal scaling by changing the backend Deployment
+          from one replica to three replicas.
+        </p>
+
+        <figure>
+          <img
+            src="docs-images/08-backend-scaling.png"
+            alt="Three backend Pods running"
+          />
+          <figcaption>
+            Figure 11 - Three backend Pods running at the same time after
+            scaling the backend Deployment to three replicas.
+          </figcaption>
+        </figure>
+
+        <p>
+          The three Pods had different Pod names and IP addresses, but the
+          frontend did not need to know any of those addresses.
+        </p>
+
+        <p>
+          The frontend continues to use the backend Service. The Service selects
+          the Pods using their labels and provides one stable network endpoint
+          for the application.
+        </p>
+
+        <figure>
+          <img
+            src="docs-images/09-backend-service.png"
+            alt="Backend ClusterIP Service"
+          />
+          <figcaption>
+            Figure 12 - The backend Service remains a ClusterIP Service on port
+            8000 while the backend Pods are scaled.
+          </figcaption>
+        </figure>
+
+        <p>
+          After the experiment I returned the backend Deployment to one replica,
+          which is a reasonable number for this small application.
+        </p>
+      </section>
+
+      <!-- 11. APPLICATION UPDATE -->
+
+      <section>
+        <h2>11. Application update</h2>
+
+        <p>
+          The assignment also required an application update using a new
+          container image version. I changed the frontend application and
+          created newer image versions during the deployment process.
+        </p>
+
+        <p>The final frontend image is:</p>
+
+        <pre>zainabf123/lemp-rahti-frontend:1.0.3</pre>
+
+        <p>
+          Version 1.0.3 changes the heading on the page to
+          <strong>Rahti Guestbook - Version 1.0.3</strong>. This makes it easy
+          to see that the new image was actually deployed.
+        </p>
+
+        <figure>
+          <img
+            src="docs-images/10-application-update.png"
+            alt="Frontend ReplicaSets and rollout history"
+          />
+          <figcaption>
+            Figure 13 - Frontend ReplicaSets and rollout history after the
+            application update. The current ReplicaSet has one active replica
+            while older ReplicaSets remain with zero active replicas.
+          </figcaption>
+        </figure>
+
+        <figure>
+          <img
+            src="docs-images/01-application-working.png"
+            alt="Frontend version 1.0.3 running"
+          />
+          <figcaption>
+            Figure 14 - The updated Version 1.0.3 frontend running through the
+            public Rahti Route.
+          </figcaption>
+        </figure>
+
+        <p>
+          During the update, OpenShift created the new ReplicaSet and Pod and
+          then removed the old active replica after the new version was ready.
+          This is the rolling update behaviour provided by the Deployment.
+        </p>
+
+        <p>
+          The old ReplicaSets are still visible in the rollout history with zero
+          active replicas. This is useful because it shows that the Deployment
+          has a history of previous application versions.
+        </p>
+      </section>
+
+      <!-- 12. PROBLEMS -->
+
+      <section>
+        <h2>12. Problems I encountered and how I solved them</h2>
+
+        <h3>Nginx permissions</h3>
+
+        <p>
+          The first frontend image did not work correctly with the restricted
+          security settings in OpenShift. Nginx tried to use directories that
+          were not writable by the container user.
+        </p>
+
+        <p>
+          I changed the Dockerfile permissions so that the required Nginx
+          directories could be used by the non-root container user.
+        </p>
+
+        <h3>Nginx port 80</h3>
+
+        <p>
+          The next problem was that the container tried to listen directly on
+          privileged port 80. This did not work with the restricted OpenShift
+          security context.
+        </p>
+
+        <p>
+          I changed Nginx to listen on port <code>8080</code> instead. The
+          frontend Service still provides port 80 internally and forwards
+          traffic to container port 8080.
+        </p>
+
+        <h3>Missing database table</h3>
+
+        <p>
+          At one point the backend returned an error because the MySQL database
+          contained the original table but not the <code>messages</code> table
+          required by the guestbook API.
+        </p>
+
+        <p>
+          I updated the database initialization configuration to create both the
+          <code>page_views</code> and <code>messages</code> tables.
+        </p>
+
+        <div class="warning">
+          MySQL initialization scripts are mainly intended for initializing an
+          empty data directory. Because the database uses persistent storage,
+          changing the initialization ConfigMap does not automatically recreate
+          tables in an already initialized database.
+        </div>
+
+        <h3>Persistent database data</h3>
+
+        <p>
+          I also had to take into account that MySQL data survives Pod
+          replacement. This means that changing environment variables or
+          initialization files does not necessarily reinitialize the database. I
+          solved the initial database setup issue by recreating the database
+          storage during development, before performing the final persistence
+          test.
+        </p>
+
+        <h3>Testing the application</h3>
+
+        <p>
+          I tested the application several times after each change using the
+          browser, the public API endpoint and SQL queries inside the MySQL Pod.
+          This helped me separate frontend, backend and database problems
+          instead of changing everything at the same time.
+        </p>
+      </section>
+
+      <!-- 13. RAHTI VS COMPOSE -->
+
+      <section>
+        <h2>13. Rahti compared with Docker Compose and cPouta</h2>
+
+        <h3>Docker Compose</h3>
+
+        <p>
+          In the previous Docker Compose setup, the three containers were
+          described in one Compose file. Compose created the application network
+          and started the containers together. A Docker volume was used for
+          persistent MySQL data.
+        </p>
+
+        <p>
+          In Rahti, the same application is split into several Kubernetes
+          resources. There are separate Deployments for the frontend, backend
+          and database, Services for communication, an OpenShift Route for the
+          public frontend, and a PersistentVolumeClaim for database storage.
+        </p>
+
+        <table>
+          <tr>
+            <th>Docker Compose</th>
+            <th>Rahti / OpenShift</th>
+          </tr>
+          <tr>
+            <td>Compose services</td>
+            <td>Kubernetes/OpenShift Deployments</td>
+          </tr>
+          <tr>
+            <td>Compose network</td>
+            <td>Kubernetes Services and cluster networking</td>
+          </tr>
+          <tr>
+            <td>Docker volume</td>
+            <td>PersistentVolumeClaim</td>
+          </tr>
+          <tr>
+            <td>Published container port</td>
+            <td>OpenShift Route for the public frontend</td>
+          </tr>
+          <tr>
+            <td>Manual container restart</td>
+            <td>Deployment/ReplicaSet Pod recovery</td>
+          </tr>
+          <tr>
+            <td>Scaling with Compose</td>
+            <td>Deployment replica scaling</td>
+          </tr>
+        </table>
+
+        <p>
+          The biggest practical difference for me was that Rahti manages the
+          application as a set of cluster resources instead of just a group of
+          containers on one Docker host. This also gives features such as
+          automatic Pod replacement and easier horizontal scaling.
+        </p>
+
+        <h3>Rahti compared with cPouta</h3>
+
+        <p>
+          cPouta and Rahti are both CSC cloud services, but they are used at
+          different levels. With cPouta, a user can work with virtual machines
+          and has more direct control over the operating system and
+          infrastructure.
+        </p>
+
+        <p>
+          With Rahti, the application is deployed into an OpenShift/Kubernetes
+          environment. Instead of managing a virtual machine and installing the
+          container platform myself, I work with Kubernetes resources such as
+          Deployments, Services, Routes, ConfigMaps, Secrets and PVCs.
+        </p>
+
+        <p>
+          For this assignment, Rahti therefore changed the way the application
+          is managed. I mainly describe the desired state of the application and
+          OpenShift handles Pod placement, replacement and networking.
+        </p>
+      </section>
+
+      <!-- 14. REPOSITORY -->
+
+      <section>
+        <h2>14. Git repository</h2>
+
+        <p>
+          The application and its deployment configuration are stored in a
+          public GitHub repository. The repository contains the application
+          source code, Dockerfiles, Docker Compose configuration and
+          Kubernetes/OpenShift manifests.
+        </p>
+
+        <figure>
+          <img
+            src="docs-images/12-github-repository.png"
+            alt="GitHub repository for the Rahti project"
+          />
+          <figcaption>
+            Figure 15 - GitHub repository containing the project source code,
+            frontend, backend, database and Kubernetes configuration.
+          </figcaption>
+        </figure>
+
+        <p>
+          The real database Secret is deliberately not stored in the repository.
+          The project contains a Secret example with placeholder values instead.
+          The <code>.env</code> file is also excluded by
+          <code>.gitignore</code>.
+        </p>
+
+        <p>
+          This means another student can see the deployment structure and create
+          their own Secret values without receiving my actual credentials.
+        </p>
+
+        <div class="links">
+          <strong>Repository:</strong><br />
+          <a
+            href="https://github.com/ZF-25/lemp-rahti-assignment"
+            target="_blank"
+          >
+            https://github.com/ZF-25/lemp-rahti-assignment
+          </a>
+        </div>
+      </section>
+
+      <!-- 15. FINAL RESULT -->
+
+      <section>
+        <h2>15. Final result</h2>
+
+        <p>
+          After the testing and experiments, the final application has one
+          frontend replica, one backend replica and one MySQL replica. The
+          backend was scaled back down after the scaling experiment.
+        </p>
+
+        <p>
+          The frontend is accessible through the OpenShift Route, while the
+          backend and database are internal ClusterIP Services.
+        </p>
+
+        <p>
+          MySQL uses the <code>mysql-data</code> PersistentVolumeClaim, so the
+          guestbook data survives replacement of the MySQL Pod.
+        </p>
+
+        <p>
+          The backend Deployment can automatically replace a deleted Pod and can
+          also be scaled to multiple replicas. The frontend Deployment can be
+          updated using a new container image version and a rolling update.
+        </p>
+
+        <figure>
+          <img
+            src="docs-images/11-final-resources.png"
+            alt="Final state of Rahti resources"
+          />
+          <figcaption>
+            Figure 16 - Final state of the Deployments, Services, Route and
+            persistent database storage.
+          </figcaption>
+        </figure>
+
+        <div class="success">
+          <strong>Overall result:</strong>
+          The three-tier guestbook application is running on CSC Rahti with the
+          frontend publicly accessible, the backend and database kept internal,
+          persistent MySQL storage, automatic Pod recovery, backend scaling and
+          a tested frontend rolling update.
+        </div>
+      </section>
+
+      <!-- 16. REQUIREMENT CHECK -->
+
+      <section>
+        <h2>16. Assignment requirement checklist</h2>
+
+        <table>
+          <tr>
+            <th>Requirement</th>
+            <th>Evidence in this documentation</th>
+          </tr>
+
+          <tr>
+            <td>Frontend, backend and MySQL database</td>
+            <td>Architecture and final resources screenshots</td>
+          </tr>
+
+          <tr>
+            <td>Only frontend publicly accessible</td>
+            <td>OpenShift Route and internal ClusterIP Services</td>
+          </tr>
+
+          <tr>
+            <td>Frontend → backend → database communication</td>
+            <td>Figures 3, 4 and 6</td>
+          </tr>
+
+          <tr>
+            <td>Database read operation</td>
+            <td>Figure 5</td>
+          </tr>
+
+          <tr>
+            <td>Database write operation</td>
+            <td>Figure 6 and the guestbook frontend</td>
+          </tr>
+
+          <tr>
+            <td>Persistent database storage</td>
+            <td>Figures 7, 8 and 9</td>
+          </tr>
+
+          <tr>
+            <td>Pod recovery</td>
+            <td>Figure 10</td>
+          </tr>
+
+          <tr>
+            <td>Backend scaling</td>
+            <td>Figures 11 and 12</td>
+          </tr>
+
+          <tr>
+            <td>Application update</td>
+            <td>Figure 13 and Version 1.0.3 frontend</td>
+          </tr>
+
+          <tr>
+            <td>Problems and solutions</td>
+            <td>Section 12</td>
+          </tr>
+
+          <tr>
+            <td>Rahti vs Docker Compose and cPouta</td>
+            <td>Section 13</td>
+          </tr>
+
+          <tr>
+            <td>Git repository</td>
+            <td>Figure 15 and repository link</td>
+          </tr>
+        </table>
+      </section>
+
+      <!-- 17. REPOSITORY STRUCTURE -->
+
+      <section>
+        <h2>17. Repository structure</h2>
+
+        <p>The important files in the project are organized as follows:</p>
+
+        <pre>
+lemp-rahti-assignment/
+├── backend/
+│   ├── app.py
+│   ├── Dockerfile
+│   └── requirements.txt
+├── db/
+│   └── init/
+│       └── init.sql
+├── frontend/
+│   ├── Dockerfile
+│   ├── index.html
+│   └── nginx.conf
+├── k8s/
+│   ├── app-config.yaml
+│   ├── backend-deployment.yaml
+│   ├── backend-service.yaml
+│   ├── db-deployment.yaml
+│   ├── db-service.yaml
+│   ├── frontend-deployment.yaml
+│   ├── frontend-route.yaml
+│   ├── frontend-service.yaml
+│   ├── mysql-init.yaml
+│   ├── mysql-pvc.yaml
+│   └── secret-example.yaml
+├── docs/
+│   ├── index.html
+│   └── docs-images/
+├── docker-compose.dev.yml
+├── .gitignore
+└── README.md</pre
+        >
+
+        <p>
+          The Kubernetes/OpenShift files are kept separately from the
+          application source code so it is easier to see which files are
+          responsible for the Rahti deployment.
+        </p>
+      </section>
+
+      <!-- 18. CONCLUSION -->
+
+      <section>
+        <h2>18. Conclusion</h2>
+
+        <p>
+          This assignment helped me understand the difference between running a
+          multi-container application with Docker Compose and deploying it to a
+          Kubernetes/OpenShift platform.
+        </p>
+
+        <p>
+          The basic application stayed quite simple, but the deployment side
+          became more structured. I had to create separate resources for
+          Deployments, Services, the Route, ConfigMaps, Secrets and persistent
+          storage.
+        </p>
+
+        <p>
+          The experiments also showed some of the useful Kubernetes features in
+          practice. Deleting a backend Pod caused a replacement Pod to be
+          created, scaling produced multiple backend Pods behind the same
+          Service, and the MySQL data remained available after replacing the
+          database Pod because it was stored on a PVC.
+        </p>
+
+        <p>
+          The most difficult part was getting the frontend to run with the
+          restricted OpenShift environment. After fixing the Nginx permissions
+          and changing the container port to 8080, the frontend could run
+          correctly on Rahti.
+        </p>
+
+        <p>
+          In the end, the complete application was working through the public
+          frontend Route, with the backend and database kept internal and the
+          database data stored persistently.
+        </p>
+      </section>
+    </main>
+
+    <footer>
+      <p>LEMP Guestbook - CSC Rahti Cloud Services Assignment</p>
+      <p>Documentation created as part of the Rahti deployment project.</p>
+    </footer>
+  </body>
+</html>
+

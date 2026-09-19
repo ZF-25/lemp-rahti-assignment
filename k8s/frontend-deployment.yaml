@@ -14,8 +14,9 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: zainabf123/lemp-rahti-frontend:1.0.3
+          image: zainabf123/lemp-rahti-frontend:1.0.4
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
               protocol: TCP
+
