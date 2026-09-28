@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request
 import os
 import mysql.connector
+import redis
+import json
 
 app = Flask(__name__)
 
@@ -9,6 +11,9 @@ DB_HOST = os.getenv("DB_HOST", "db")
 DB_USER = os.getenv("DB_USER", "appuser")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_NAME = os.getenv("DB_NAME", "appdb")
+
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+redis_client = redis.Redis(host=REDIS_HOST, port=6379, decode_responses=True)
 
 
 def get_db_connection():
@@ -27,6 +32,11 @@ def health():
 
 @app.get("/api/messages")
 def get_messages():
+    cached_messages = redis_client.get("messages")
+
+    if cached_messages:
+        return jsonify(json.loads(cached_messages))
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
 
@@ -39,6 +49,7 @@ def get_messages():
     )
 
     messages = cursor.fetchall()
+    redis_client.set("messages", json.dumps(messages, default=str))
 
     cursor.close()
     conn.close()
@@ -66,6 +77,7 @@ def create_message():
     )
 
     conn.commit()
+    redis_client.delete("messages")
 
     new_id = cursor.lastrowid
 
