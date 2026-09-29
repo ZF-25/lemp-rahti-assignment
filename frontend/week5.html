@@ -1,0 +1,988 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cloud Services - Week 5 Documentation</title>
+
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        line-height: 1.6;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 30px;
+        color: #222;
+        background: #f5f5f5;
+      }
+
+      .container {
+        background: white;
+        padding: 40px;
+        border-radius: 8px;
+      }
+
+      h1 {
+        color: #1f3c5b;
+        margin-bottom: 5px;
+      }
+
+      h2 {
+        color: #1f3c5b;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 6px;
+        margin-top: 40px;
+      }
+
+      h3 {
+        color: #2d526f;
+        margin-top: 30px;
+      }
+
+      p {
+        margin: 12px 0;
+      }
+
+      ul,
+      ol {
+        margin-top: 8px;
+      }
+
+      li {
+        margin-bottom: 7px;
+      }
+
+      code {
+        background: #f0f0f0;
+        padding: 2px 5px;
+        border-radius: 3px;
+      }
+
+      pre {
+        background: #f4f4f4;
+        padding: 15px;
+        overflow-x: auto;
+        border-left: 4px solid #1f3c5b;
+      }
+
+      .info {
+        background: #eef4f8;
+        border-left: 4px solid #1f3c5b;
+        padding: 12px 16px;
+        margin: 20px 0;
+      }
+
+      .success {
+        background: #eef7ee;
+        border-left: 4px solid #4d8b4d;
+        padding: 12px 16px;
+        margin: 20px 0;
+      }
+
+      figure {
+        margin: 30px 0;
+        text-align: center;
+      }
+
+      figure img {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      figcaption {
+        margin-top: 8px;
+        color: #555;
+        font-size: 0.95em;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+      }
+
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #eef2f5;
+      }
+
+      .architecture {
+        background: #f7f7f7;
+        padding: 20px;
+        font-family: monospace;
+        white-space: pre;
+        overflow-x: auto;
+        border: 1px solid #ddd;
+      }
+
+      .small {
+        color: #666;
+        font-size: 0.9em;
+      }
+
+      a {
+        color: #1d5f91;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Cloud Services - Week 5 Documentation</h1>
+      <p><strong>Prepared by Zainab Fatima</strong></p>
+      
+
+      <p>
+        This documentation covers the theory questions and the practical work
+        completed during Week 5. For the practical part, I added Redis caching
+        to the backend of the LEMP guestbook application from Week 4.
+      </p>
+
+      <div class="info">
+        <strong>Project:</strong> LEMP Guestbook on CSC Rahti<br />
+        <strong>Rahti project:</strong> cloud-services-assignment4<br />
+        <strong>Public application:</strong>
+        <a
+          href="https://frontend-cloud-services-assignment4.2.rahtiapp.fi"
+          target="_blank"
+        >
+          https://frontend-cloud-services-assignment4.2.rahtiapp.fi </a
+        ><br />
+        <strong>GitHub repository:</strong>
+        <a
+          href="https://github.com/ZF-25/lemp-rahti-assignment"
+          target="_blank"
+        >
+          https://github.com/ZF-25/lemp-rahti-assignment
+        </a>
+      </div>
+
+      <!-- ====================================================== -->
+      <!-- PART A -->
+      <!-- ====================================================== -->
+
+      <h2>Part A - Theory Questions</h2>
+
+
+<h3>Question 1 - What is the difference between SAML and OAuth?</h3>
+
+<p>
+  SAML and OAuth are both used when applications need to work with users and
+  access to services, but they are used for different purposes. SAML is mainly
+  used for authentication and single sign-on, while OAuth is mainly used for
+  authorization.
+</p>
+
+<p>
+  SAML stands for Security Assertion Markup Language. It is commonly used for
+  single sign-on (SSO). This means that a user can log in through an identity
+  provider and then access another application without having to log in again.
+  For example, a company could have one identity provider for its employees and
+  use it to give them access to several internal applications.
+</p>
+
+<p>
+  OAuth is mainly about giving an application permission to access something
+  without giving the application the user's password. For example, an
+  application could ask for permission to access certain information from a
+  user's Google account. If the user agrees, the application receives an
+  access token that can be used for the permissions that were given.
+</p>
+
+<p>
+  A simple way to remember the difference is that SAML is commonly used to
+  handle logging a user into an application, while OAuth is mainly used when an
+  application needs permission to access another service. OAuth is also often
+  used together with OpenID Connect when an application needs user
+  authentication.
+</p>
+
+<p>
+  For a company, the choice depends on what they need. SAML can be useful for
+  enterprise applications where employees need single sign-on through the
+  company's existing identity provider. OAuth is useful when an application
+  needs to access another service or API on behalf of a user. For example, if I
+  added login through an external provider to my Week 4 guestbook, an
+  OAuth-based solution could be one possible approach.
+</p>
+
+
+<h3>Question 2 - What is a Web Application Firewall (WAF)?</h3>
+
+<p>
+  A Web Application Firewall, or WAF, is a security layer that checks HTTP and
+  HTTPS traffic going to a web application. It can identify requests that look
+  like known attacks and block them before they reach the application.
+</p>
+
+<p>
+  A WAF can help protect against attacks such as SQL injection and cross-site
+  scripting (XSS). It can also inspect things such as URLs, request parameters,
+  headers and request bodies to look for suspicious requests.
+</p>
+
+<p>
+  In my Week 4 application, the frontend is public while the backend and
+  database are internal services. The basic architecture is:
+</p>
+
+<pre class="architecture">Internet
+   |
+   v
+Route
+   |
+   v
+Frontend
+   |
+   v
+Backend
+   |
+   v
+Database</pre>
+
+<p>
+  A WAF could be placed in front of the public part of the application so that
+  web traffic is checked before it reaches the application. The exact location
+  would depend on the cloud platform and how the WAF is implemented. The main
+  idea is that unwanted or suspicious web requests can be filtered before they
+  reach the application.
+</p>
+
+<p>
+  A WAF is not a replacement for secure programming. The backend should still
+  validate user input, use parameterized SQL queries and protect passwords and
+  other secrets. The WAF is an additional security layer rather than something
+  that replaces these practices.
+</p>
+
+<p>
+  In a larger production application, a WAF could be useful because the
+  application may receive a lot more traffic and could be targeted by different
+  types of web attacks. For my small student application, the main thing I
+  learned is where a WAF would fit into the architecture and what kind of
+  protection it can provide.
+</p>
+
+
+<h3>
+  Question 3 - Decentralized storage compared with centralized object storage
+</h3>
+
+<p>
+  Decentralized storage means that data can be distributed between multiple
+  independent nodes instead of being stored through one central storage
+  provider. Examples include systems such as IPFS and Sia. Centralized object
+  storage, such as CSC Allas or Amazon S3, is managed by a storage provider
+  that provides the storage infrastructure to users.
+</p>
+
+<p>
+  With centralized object storage, an application normally communicates with
+  the storage service through an API. Files or other objects are stored in
+  buckets and can be retrieved when needed. This is relatively simple for a
+  developer because the storage provider handles most of the underlying
+  infrastructure.
+</p>
+
+<p>
+  Decentralized storage works differently because the data can be distributed
+  between different participants or nodes. This can reduce the application's
+  dependence on one central provider. Some decentralized systems also use
+  content addressing, where data is identified based on its content instead of
+  only using a traditional file location.
+</p>
+
+<table>
+  <tr>
+    <th>Centralized object storage</th>
+    <th>Decentralized storage</th>
+  </tr>
+  <tr>
+    <td>Storage is operated by a central provider.</td>
+    <td>Storage can be distributed between multiple nodes.</td>
+  </tr>
+  <tr>
+    <td>Usually simple to integrate through an API.</td>
+    <td>Can require more knowledge about the decentralized network.</td>
+  </tr>
+  <tr>
+    <td>The provider manages much of the storage infrastructure.</td>
+    <td>Storage can depend on multiple independent participants.</td>
+  </tr>
+  <tr>
+    <td>
+      Commonly used for backups, media and application data.
+    </td>
+    <td>
+      Can be useful when distribution and reduced dependence on one provider
+      are important.
+    </td>
+  </tr>
+</table>
+
+<p>
+  There are trade-offs with both approaches. Centralized storage is usually
+  easier to manage and integrate, but the application depends on the storage
+  provider. Decentralized storage can provide a different way of distributing
+  data, but it can also be more complicated to understand and operate.
+</p>
+
+<p>
+  I used Allas in an earlier cloud storage exercise. The idea was to store an
+  object in a bucket and access it through the storage service. For a normal
+  web application, this type of object storage is convenient because the
+  application can use the storage API without having to manage a distributed
+  storage network itself.
+</p>
+
+
+<h3>
+  Question 4 - What is YAML and why is it commonly used with Kubernetes?
+</h3>
+
+<p>
+  YAML stands for "YAML Ain't Markup Language". It is a human-readable format
+  for representing structured data. YAML is commonly used for configuration
+  because it uses indentation, keys and values to show the structure, which
+  makes configuration files relatively easy to read.
+</p>
+
+<p>
+  Kubernetes resources are often described using YAML manifests. For example,
+  a Deployment can contain information about the application image, number of
+  replicas, ports and environment variables. Kubernetes can use this
+  configuration to create or update the resources in the cluster.
+</p>
+
+<p>
+  This is also useful in Rahti because Rahti is based on Kubernetes and
+  OpenShift concepts. Instead of manually creating every part of an
+  application, the configuration can be written in a manifest and stored in
+  Git. This makes the configuration easier to reproduce and keep track of.
+</p>
+
+<p>
+  JSON can represent the same type of structured information, but YAML is
+  generally easier for people to read and write as a configuration file. YAML
+  does not need as many brackets and quotation marks, while indentation is
+  used to show the structure.
+</p>
+
+<p>
+  For example, a small YAML configuration could look like this:
+</p>
+
+<pre>
+name: backend
+replicas: 1
+image: lemp-rahti-backend:1.1.0
+port: 8000
+</pre>
+
+<p>
+  The same information could also be represented using JSON:
+</p>
+
+<pre>
+{
+    "name": "backend",
+    "replicas": 1,
+    "image": "lemp-rahti-backend:1.1.0",
+    "port": 8000
+}
+</pre>
+
+<p>
+  Both formats can represent structured data. YAML is commonly used for
+  Kubernetes configuration because larger manifests can be easier to read and
+  maintain. However, YAML also depends on correct indentation, so even a small
+  formatting mistake can cause problems when the configuration is used.
+</p>
+
+      <!-- ====================================================== -->
+      <!-- PART B -->
+      <!-- ====================================================== -->
+
+      <h2>Part B - Hands-on: Adding Redis Cache</h2>
+
+      <p>
+        For the practical part of Week 5, I extended the LEMP guestbook
+        application from Week 4 by adding Redis as a caching layer. The original
+        application had a frontend, Flask backend and MySQL database. Every
+        request for the messages could query MySQL directly.
+      </p>
+
+      <p>
+        The idea behind the change was to reduce repeated database queries.
+        Redis is an in-memory key-value store, so it can be used to keep
+        frequently requested data temporarily in memory. In this implementation,
+        the backend first checks Redis when the messages endpoint is requested.
+        If the data is already cached, the backend can return it without
+        querying MySQL.
+      </p>
+
+      <h3>1. Original Week 4 architecture</h3>
+
+      <p>Before adding Redis, the application had three main components:</p>
+
+      <ul>
+        <li>Frontend - Nginx serving the web page.</li>
+        <li>Backend - Flask/Gunicorn REST API.</li>
+        <li>Database - MySQL 8.4.</li>
+      </ul>
+
+      <p>
+        The frontend was exposed through the Rahti Route, while the backend and
+        database were only available through internal Kubernetes Services.
+      </p>
+
+      <div class="architecture">
+        Internet | v HTTPS Route | v Frontend | v Backend | v MySQL Database
+      </div>
+
+      <h3>2. New architecture with Redis</h3>
+
+      <p>
+        I added Redis as another internal service. The updated architecture is:
+      </p>
+
+      <div class="architecture">
+        Internet | v HTTPS Route | v Frontend | v Backend | \ | \ v v MySQL
+        Redis Database Cache
+      </div>
+
+      <p>
+        Redis is not publicly accessible. The backend connects to Redis using
+        the internal Kubernetes Service name <code>redis</code> and port
+        <code>6379</code>.
+      </p>
+
+      <div class="info">
+        <strong>Redis image:</strong> redis:7-alpine<br />
+        <strong>Redis Service:</strong> redis<br />
+        <strong>Redis port:</strong> 6379<br />
+        <strong>Public Route:</strong> none
+      </div>
+
+      <h3>3. Creating the Redis Deployment</h3>
+
+      <p>
+        I created a new Redis Deployment in the
+        <code>cloud-services-assignment4</code> Rahti project. I used the
+        <code>redis:7-alpine</code> image.
+      </p>
+
+      <p>
+        The target port was set to 6379 and I did not create a public Route.
+        Redis only needs to be accessed by the backend, so exposing it to the
+        Internet would not be necessary.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/14-redis-deployment-running.png"
+          alt="Redis deployment running in Rahti"
+        />
+        <figcaption>
+          Screenshot 14 - Redis Deployment running in the Rahti project. The
+          Redis pod is running and the internal Redis Service uses port 6379.
+        </figcaption>
+      </figure>
+
+      <h3>4. Configuring the backend to use Redis</h3>
+
+      <p>
+        The backend needs to know the hostname of the Redis Service. I added the
+        following environment variable to the backend Deployment:
+      </p>
+
+      <pre>
+REDIS_HOST=redis
+    </pre
+      >
+
+      <p>
+        I used the Kubernetes Service name instead of an IP address. This is
+        useful because Kubernetes DNS allows the backend to find the Redis
+        Service by its name even if the Redis pod itself changes.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/15-backend-redis-environment.png"
+          alt="Backend Redis environment variable"
+        />
+        <figcaption>
+          Screenshot 15 - Backend Deployment with REDIS_HOST set to redis.
+        </figcaption>
+      </figure>
+
+      <h3>5. Updating the backend application</h3>
+
+      <p>I added the Redis Python package to the backend requirements:</p>
+
+      <pre>
+Flask==3.0.3
+gunicorn==23.0.0
+mysql-connector-python==9.0.0
+redis
+    </pre
+      >
+
+      <p>
+        The backend then creates a Redis client using the hostname from the
+        environment variable:
+      </p>
+
+      <pre>
+REDIS_HOST = os.getenv("REDIS_HOST", "redis")
+redis_client = redis.Redis(
+    host=REDIS_HOST,
+    port=6379,
+    decode_responses=True
+)
+    </pre
+      >
+
+      <p>
+        I also changed the GET <code>/api/messages</code> endpoint so that it
+        checks Redis before querying MySQL.
+      </p>
+
+      <pre>
+cached_messages = redis_client.get("messages")
+
+if cached_messages:
+    return jsonify(json.loads(cached_messages))
+    </pre
+      >
+
+      <p>
+        If the cache does not contain the messages, the backend continues with
+        the normal MySQL query. After getting the results from MySQL, it stores
+        them in Redis:
+      </p>
+
+      <pre>
+messages = cursor.fetchall()
+
+redis_client.set(
+    "messages",
+    json.dumps(messages, default=str)
+)
+    </pre
+      >
+
+      <p>This means the application follows a simple cache-aside pattern:</p>
+
+      <ol>
+        <li>The client requests the messages.</li>
+        <li>The backend checks Redis.</li>
+        <li>If Redis contains the data, the cached data is returned.</li>
+        <li>If Redis does not contain the data, the backend queries MySQL.</li>
+        <li>The MySQL result is stored in Redis.</li>
+        <li>The result is returned to the client.</li>
+      </ol>
+
+      <h3>6. Rebuilding the backend image</h3>
+
+      <p>
+        After changing the Python requirements and application code, I needed to
+        rebuild the backend container image because the running image did not
+        yet contain the Redis Python package.
+      </p>
+
+      <p>
+        I built the image from the project root using the backend Dockerfile:
+      </p>
+
+      <pre>
+docker build -t assignment4-backend-test -f backend/Dockerfile .
+    </pre
+      >
+
+      <p>
+        I checked that the Redis package was installed in the new image and then
+        tagged the image as:
+      </p>
+
+      <pre>
+zainabf123/lemp-rahti-backend:1.1.0
+    </pre
+      >
+
+      <p>
+        The image was pushed to Docker Hub and the Rahti backend Deployment was
+        updated to use version <code>1.1.0</code>.
+      </p>
+
+      <h3>7. Testing Redis connectivity</h3>
+
+      <p>
+        After the new backend pod was running, I tested whether the Redis Python
+        package was available inside the pod.
+      </p>
+
+      <pre>
+python -c "import redis; print(redis.__version__)"
+    </pre
+      >
+
+      <p>The returned version was <code>8.1.0</code>.</p>
+
+      <p>
+        I then tested the connection from the backend pod to the Redis Service:
+      </p>
+
+      <pre>
+python -c "import redis; r=redis.Redis(host='redis', port=6379); print(r.ping())"
+    </pre
+      >
+
+      <p>The result was:</p>
+
+      <pre>
+True
+    </pre
+      >
+
+      <div class="success">
+        This confirmed that the backend could reach the Redis Service using the
+        internal Kubernetes Service name.
+      </div>
+
+      <h3>8. Testing the cache through the API</h3>
+
+      <p>
+        I tested the <code>/api/messages</code> endpoint after the Redis
+        deployment was running. The API returned HTTP 200 and the Redis cache
+        key <code>messages</code> was created.
+      </p>
+
+      <figure>
+        <img src="docs-images/16-redis-cache-api-test.png" alt="Redis cache API test" />
+        <figcaption>
+          Screenshot 16 - API test showing the messages endpoint working with
+          Redis caching.
+        </figcaption>
+      </figure>
+
+      <p>
+        The application was also accessible normally through the frontend Route.
+        This showed that adding Redis did not break the existing frontend and
+        backend communication.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/17-application-working-with-redis.png"
+          alt="Application working with Redis"
+        />
+        <figcaption>
+          Screenshot 17 - The guestbook application working after Redis was
+          added.
+        </figcaption>
+      </figure>
+
+      <h3>9. Testing cache invalidation</h3>
+
+      <p>
+        An important part of using a cache is making sure that old data is not
+        returned after the database has been changed.
+      </p>
+
+      <p>
+        I handled this by deleting the <code>messages</code> Redis key whenever
+        a new message is successfully inserted into MySQL.
+      </p>
+
+      <pre>
+conn.commit()
+redis_client.delete("messages")
+    </pre
+      >
+
+      <p>The sequence is therefore:</p>
+
+      <ol>
+        <li>A new message is inserted into MySQL.</li>
+        <li>The database transaction is committed.</li>
+        <li>The old Redis cache is deleted.</li>
+        <li>The next GET request does not find the old cached value.</li>
+        <li>The backend reads the updated data from MySQL.</li>
+        <li>The new result is stored in Redis again.</li>
+      </ol>
+
+      <figure>
+        <img
+          src="docs-images/18-cache-invalidation-test.png"
+          alt="Cache invalidation test"
+        />
+        <figcaption>
+          Screenshot 18 - Cache invalidation test after changing the application
+          data.
+        </figcaption>
+      </figure>
+
+      <h3>10. Cache population after a GET request</h3>
+
+      <p>
+        I also tested the cache before and after a GET request. Before the first
+        request, the <code>messages</code> key did not exist in Redis.
+      </p>
+
+      <p>
+        The GET request returned the messages from the database and then stored
+        the result in Redis. After the request, the cache key existed.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/19-cache-populated-after-get.png"
+          alt="Cache populated after GET request"
+        />
+        <figcaption>
+          Screenshot 19 - The Redis cache is populated after the GET request.
+        </figcaption>
+      </figure>
+
+      <p>The test results were:</p>
+
+      <pre>
+Before GET: False
+After GET: True
+    </pre
+      >
+
+      <p>This demonstrates the cache miss followed by cache population.</p>
+
+      <h3>11. Cache invalidation after POST</h3>
+
+      <p>
+        I then tested what happens when a new message is added. The POST request
+        returned HTTP status 201, which means that the new message was created.
+      </p>
+
+      <p>
+        After the POST request, the Redis <code>messages</code> key was deleted.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/20-cache-invalidation-after-post.png"
+          alt="Cache invalidation after POST"
+        />
+        <figcaption>
+          Screenshot 20 - The cache is removed after a new message is posted.
+        </figcaption>
+      </figure>
+
+      <p>The test results were:</p>
+
+      <pre>
+POST status: 201
+Cache after POST: False
+    </pre
+      >
+
+      <p>
+        This was important because otherwise the application could return the
+        old cached list and the newly added message would not appear until the
+        cache changed for some other reason.
+      </p>
+
+      <h3>12. Final application test</h3>
+
+      <p>
+        After testing the cache and invalidation behaviour, I opened the
+        application again through the public HTTPS Route. The guestbook was
+        still working and the newly added test messages were visible.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/21-final-application-with-redis.png"
+          alt="Final guestbook application with Redis"
+        />
+        <figcaption>
+          Screenshot 21 - Final guestbook application working with Redis
+          caching.
+        </figcaption>
+      </figure>
+
+      <h3>13. Final Redis implementation</h3>
+
+      <p>
+        The final Week 5 architecture has Redis running as an internal service
+        alongside the existing database:
+      </p>
+
+      <div class="architecture">
+        Internet | v HTTPS Route | v Frontend | v Backend / \ / \ v v MySQL
+        Redis Database Cache
+      </div>
+
+      <p>
+        Redis is only used by the backend. Users do not connect directly to
+        Redis. The backend decides whether the requested messages can be
+        returned from the cache or whether MySQL needs to be queried.
+      </p>
+
+      <table>
+        <tr>
+          <th>Component</th>
+          <th>Purpose</th>
+        </tr>
+        <tr>
+          <td>Frontend</td>
+          <td>Serves the guestbook web interface.</td>
+        </tr>
+        <tr>
+          <td>Backend</td>
+          <td>Provides the REST API and handles database and cache access.</td>
+        </tr>
+        <tr>
+          <td>MySQL</td>
+          <td>Stores the permanent guestbook messages.</td>
+        </tr>
+        <tr>
+          <td>Redis</td>
+          <td>Stores a temporary cached copy of the messages.</td>
+        </tr>
+        <tr>
+          <td>Rahti Service</td>
+          <td>
+            Provides internal networking between the application components.
+          </td>
+        </tr>
+        <tr>
+          <td>HTTPS Route</td>
+          <td>Provides public access to the frontend.</td>
+        </tr>
+      </table>
+
+      <h3>14. What I learned</h3>
+
+      <p>
+        The main thing I learned from this exercise was how a cache can be added
+        to an existing cloud application without changing the whole
+        architecture. The database is still responsible for permanent storage,
+        while Redis is used to reduce repeated database reads.
+      </p>
+
+      <p>
+        I also learned that the Redis container should not be exposed publicly.
+        The backend can communicate with it through the internal Kubernetes
+        Service name. This is similar to how the backend already communicates
+        with MySQL in the Week 4 application.
+      </p>
+
+      <p>
+        Another important part was cache invalidation. It is not enough to store
+        data in Redis because the cached data can become outdated. In my
+        implementation, the cache is deleted when a new message is successfully
+        added. The next GET request then reads the current data from MySQL and
+        creates a new cached value.
+      </p>
+
+      <p>
+        This exercise also showed why container images need to be rebuilt when
+        Python dependencies change. Adding the <code>redis</code> package to
+        <code>requirements.txt</code> was not enough by itself; the new
+        dependency had to be included in the backend image and the updated image
+        had to be deployed to Rahti.
+      </p>
+
+      <h3>15. Git and final changes</h3>
+
+      <p>
+        The Redis application changes were committed and pushed to the GitHub
+        repository. The backend Redis implementation was committed with:
+      </p>
+
+      <pre>
+68a6f59 Add Redis caching to backend
+    </pre
+      >
+
+      <p>The updated Week 5 documentation was then committed with:</p>
+
+      <pre>
+36c9bd6 Update README with Week 5 Redis caching
+    </pre
+      >
+
+      <p>
+        Both changes were pushed to the <code>main</code> branch of the project
+        repository.
+      </p>
+
+      <h2>Conclusion</h2>
+
+      <p>
+        In Week 5, I extended my Week 4 LEMP guestbook application by adding
+        Redis as an internal caching service. The backend now checks Redis
+        before reading the messages from MySQL. When the cache is empty, the
+        backend gets the data from MySQL and stores it in Redis. When a new
+        message is added, the cache is deleted so that the next request gets the
+        updated data.
+      </p>
+
+      <p>
+        The final application was tested through the public HTTPS frontend and
+        the Redis connection and cache invalidation were tested directly from
+        the backend environment. The existing MySQL database remains the
+        permanent storage, while Redis provides the additional caching layer.
+      </p>
+
+      <h2>Sources</h2>
+
+      <ul>
+        <li>
+          GeeksforGeeks - Redis Cache:
+          <a
+            href="https://www.geeksforgeeks.org/system-design/redis-cache/"
+            target="_blank"
+          >
+            https://www.geeksforgeeks.org/system-design/redis-cache/
+          </a>
+        </li>
+
+        <li>
+          Kubernetes Documentation - Objects and resource configuration:
+          <a
+            href="https://kubernetes.io/docs/concepts/overview/working-with-objects/"
+            target="_blank"
+          >
+            https://kubernetes.io/docs/concepts/overview/working-with-objects/
+          </a>
+        </li>
+
+        <li>
+          OAuth - OAuth 2.0:
+          <a href="https://oauth.net/2/" target="_blank">
+            https://oauth.net/2/
+          </a>
+        </li>
+
+        <li>
+          SAML Technical Overview:
+          <a href="https://www.oasis-open.org/standard/saml/" target="_blank">
+            https://www.oasis-open.org/standard/saml/
+          </a>
+        </li>
+      </ul>
+
+      <p class="small">Week 5 documentation - Cloud Services</p>
+    </div>
+  </body>
+</html>
