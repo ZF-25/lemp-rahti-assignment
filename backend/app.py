@@ -3,8 +3,18 @@ import os
 import mysql.connector
 import redis
 import json
+import logging
+import time
 
 app = Flask(__name__)
+
+
+# Configure structured logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s"
+)
+logger = logging.getLogger(__name__)
 
 
 # Database configuration
@@ -30,6 +40,30 @@ def get_db_connection():
         password=DB_PASSWORD,
         database=DB_NAME
     )
+
+
+# Request logging
+@app.before_request
+def start_request_timer():
+    request.start_time = time.perf_counter()
+
+
+@app.after_request
+def log_request(response):
+    duration_ms = round(
+        (time.perf_counter() - request.start_time) * 1000,
+        2
+    )
+
+    logger.info(json.dumps({
+        "event": "http_request",
+        "method": request.method,
+        "path": request.path,
+        "status": response.status_code,
+        "duration_ms": duration_ms
+    }))
+
+    return response
 
 
 # Kubernetes liveness probe
