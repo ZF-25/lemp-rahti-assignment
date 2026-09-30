@@ -1,0 +1,51 @@
+name: Week 6 CI/CD
+
+on:
+  push:
+    branches:
+      - week6
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build backend image
+        run: |
+          docker build \
+            -f backend/Dockerfile \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/lemp-rahti-backend:${{ github.sha }} \
+            .
+
+      - name: Push backend image
+        run: |
+          docker push \
+            ${{ secrets.DOCKERHUB_USERNAME }}/lemp-rahti-backend:${{ github.sha }}
+
+      - name: Install OpenShift CLI
+        uses: redhat-actions/oc-installer@v1
+
+      - name: Log in to Rahti
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: https://api.2.rahti.csc.fi:6443
+          openshift_token: ${{ secrets.RAHTI_TOKEN }}
+          namespace: cloud-services-assignment4
+
+      - name: Apply backend configuration and deploy image
+        run: |
+          oc apply -f k8s/backend-deployment.yaml
+
+          oc set image deployment/backend \
+            backend=${{ secrets.DOCKERHUB_USERNAME }}/lemp-rahti-backend:${{ github.sha }}
+
+          oc rollout status deployment/backend --timeout=180s
