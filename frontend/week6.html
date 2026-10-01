@@ -1,0 +1,1322 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cloud Services - Week 6 Documentation</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        line-height: 1.6;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 30px;
+        color: #222;
+        background: #f5f5f5;
+      }
+
+      .container {
+        background: #fff;
+        padding: 40px;
+        border-radius: 8px;
+      }
+
+      h1 {
+        color: #1f3c5b;
+      }
+
+      h2 {
+        color: #1f3c5b;
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 5px;
+        margin-top: 35px;
+      }
+
+      h3 {
+        color: #2d526f;
+        margin-top: 28px;
+      }
+
+      code {
+        background: #f0f0f0;
+        padding: 2px 5px;
+        border-radius: 3px;
+      }
+
+      pre {
+        background: #f4f4f4;
+        padding: 15px;
+        overflow-x: auto;
+        border-left: 4px solid #1f3c5b;
+      }
+
+      .info {
+        background: #eaf4fb;
+        border-left: 5px solid #3498db;
+        padding: 15px;
+        margin: 20px 0;
+      }
+
+      .success {
+        background: #eaf7ea;
+        border-left: 5px solid #2e8b57;
+        padding: 15px;
+        margin: 20px 0;
+      }
+
+      .warning {
+        background: #fff7df;
+        border-left: 5px solid #d39e00;
+        padding: 15px;
+        margin: 20px 0;
+      }
+
+      figure {
+        text-align: center;
+        margin: 25px 0;
+      }
+
+      figure img {
+        max-width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+
+      figcaption {
+        margin-top: 8px;
+        font-size: 0.95em;
+        color: #555;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 20px 0;
+      }
+
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #f0f0f0;
+      }
+
+      .architecture {
+        font-family: "Courier New", monospace;
+        white-space: pre;
+        background: #f4f4f4;
+        padding: 15px;
+        border-left: 4px solid #1f3c5b;
+        overflow-x: auto;
+      }
+
+      .small {
+        font-size: 0.9em;
+        color: #555;
+      }
+
+      a {
+        color: #0066cc;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <h1>Cloud Services - Week 6 Documentation</h1>
+      <p><strong>Prepared by Zainab Fatima</strong></p>
+
+      <p>
+        This documentation covers the theory questions and the practical work
+        completed during Week 6. For the practical part, I extended the LEMP
+        guestbook application from the previous weeks by adding a GitHub Actions
+        CI/CD pipeline, Kubernetes health probes, and structured logging. I also
+        tested the deployment and deliberately caused a readiness check to fail
+        so I could see what happens when a pod is not ready.
+      </p>
+
+      <div class="info">
+        <strong>Project:</strong> LEMP Guestbook Application<br />
+        <strong>Rahti project:</strong> cloud-services-assignment4<br />
+        <strong>Public application:</strong>
+        <a href="https://frontend-cloud-services-assignment4.2.rahtiapp.fi/"
+          >https://frontend-cloud-services-assignment4.2.rahtiapp.fi/</a
+        ><br />
+        <strong>GitHub repository:</strong>
+        <a href="https://github.com/ZF-25/lemp-rahti-assignment"
+          >https://github.com/ZF-25/lemp-rahti-assignment</a
+        ><br />
+        <strong>Week 6 branch:</strong> <code>week6</code>
+      </div>
+
+      <p>
+        I kept the Week 6 work on a separate <code>week6</code> branch instead
+        of changing the protected <code>main</code> branch. This let me work on
+        the new CI/CD and observability features without changing the Week 5
+        version that was already completed.
+      </p>
+
+      <!-- PART A -->
+      <h2>Part A - Theory Questions</h2>
+
+      <h3>
+        1. Explain the difference between Continuous Integration, Continuous
+        Delivery and Continuous Deployment.
+      </h3>
+
+      <p>
+        Continuous Integration (CI) is the process of regularly combining code
+        changes into a shared repository and automatically checking that the
+        changes do not break the project. The idea is that instead of waiting
+        until the end of a project to find problems, developers get feedback
+        soon after making changes. For example, a CI pipeline could build the
+        Docker image and run tests whenever new code is pushed to GitHub.
+      </p>
+
+      <p>
+        Continuous Delivery goes one step further. The application is
+        automatically built, tested and prepared so that it is always in a state
+        where it could be released. The final release can still require a person
+        to approve it. So the software is ready for deployment, but the actual
+        deployment does not necessarily happen automatically.
+      </p>
+
+      <p>
+        Continuous Deployment goes one step further again. When the code passes
+        the required automated checks, it is automatically deployed without
+        someone having to manually approve every release. This means that a
+        successful change can go from the repository to the running application
+        as part of the same automated process.
+      </p>
+
+      <p>
+        I think the easiest way to remember the difference is that
+        <strong
+          >Continuous Integration is about checking changes, Continuous Delivery
+          is about keeping software ready to release, and Continuous Deployment
+          is about automatically releasing it</strong
+        >.
+      </p>
+
+      <p>
+        In my Week 6 project, I implemented a pipeline that is closest to
+        Continuous Deployment for the <code>week6</code> branch. When I pushed
+        my changes, GitHub Actions automatically built the backend Docker image,
+        pushed it to Docker Hub, logged into Rahti, updated the backend
+        Deployment and waited for the rollout to complete.
+      </p>
+
+      <p>
+        This was useful because I did not have to manually build the image and
+        then manually update the Deployment every time. The pipeline connected
+        these steps together.
+      </p>
+
+      <p class="small">
+        Source: Atlassian documentation on Continuous Integration, Continuous
+        Delivery and Continuous Deployment.
+      </p>
+
+      <h3>
+        2. Describe the structure of a GitHub Actions workflow (triggers, jobs,
+        steps). What would a minimal pipeline for the app you built in Week 4/5
+        need to do?
+      </h3>
+
+      <p>
+        A GitHub Actions workflow is a YAML file that describes what should
+        happen automatically when something happens in a GitHub repository. The
+        workflow normally contains a <strong>trigger, jobs and steps</strong>.
+      </p>
+
+      <p>
+        The <strong>trigger</strong> decides when the workflow should start. For
+        example, it can run when code is pushed to a particular branch. In my
+        Week 6 project, I used a push trigger for the <code>week6</code> branch,
+        so pushing new changes to that branch starts the workflow.
+      </p>
+
+      <p>
+        A <strong>job</strong> is a group of related tasks that runs on a GitHub
+        Actions runner. My workflow has one job called
+        <code>build-push-deploy</code>. Inside that job I have several steps
+        that are executed in order.
+      </p>
+
+      <p>
+        The <strong>steps</strong> are the individual actions or commands that
+        make up the job. In my workflow, the first step checks out the
+        repository so the runner has the project files. The next steps log into
+        Docker Hub, build the backend Docker image and push it to Docker Hub.
+        After that, the workflow installs the OpenShift CLI and logs into the
+        Rahti project. Finally, it updates the backend Deployment and waits for
+        the rollout to finish.
+      </p>
+
+      <p>
+        A minimal pipeline for the guestbook application would therefore need to
+        do something like this:
+      </p>
+
+      <ol>
+        <li>Get the latest code from the GitHub repository.</li>
+        <li>Build the backend Docker image.</li>
+        <li>Run some basic checks or tests before deployment.</li>
+        <li>Push the image to a container registry.</li>
+        <li>Log into the Rahti/OpenShift project using a stored secret.</li>
+        <li>Update the backend Deployment to use the new image.</li>
+        <li>
+          Wait for the deployment rollout and make sure it becomes healthy.
+        </li>
+      </ol>
+
+      <p>
+        My Week 6 workflow follows this same basic process. I used the Git
+        commit SHA as the Docker image tag. This means that the image deployed
+        to Rahti can be connected back to the exact commit that triggered the
+        workflow. For example, instead of always deploying an image called
+        <code>latest</code>, the workflow produced an image with a tag based on
+        the commit SHA.
+      </p>
+
+      <pre><code>on:
+  push:
+    branches:
+      - week6
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest</code></pre>
+
+      <p>
+        One thing I learned from this is that a CI/CD pipeline is not just a
+        GitHub Actions file that turns green. For this assignment, the important
+        part was that the workflow actually changed the running application in
+        Rahti. That is why I also checked the deployed image and the final
+        public application after the workflow completed.
+      </p>
+
+      <p class="small">
+        Source: GitHub Actions documentation on workflows, jobs and steps.
+      </p>
+
+      <h3>
+        3. What are the three pillars of observability (metrics, logs, traces)?
+        Give an example of a question each is best suited to answer.
+      </h3>
+
+      <p>
+        The three main pillars of observability are
+        <strong>metrics, logs and traces</strong>. They give different types of
+        information about what is happening inside an application. They are
+        related, but each one is useful for answering different questions.
+      </p>
+
+      <p>
+        <strong>Metrics</strong> are numerical measurements collected over time.
+        Examples include CPU usage, memory usage, request count, response time
+        or error rate. Metrics are useful when I want to see the overall state
+        or behaviour of an application.
+      </p>
+
+      <p>
+        For example, a question that metrics could answer is:
+        <em
+          >"Has the error rate of my backend increased during the last 30
+          minutes?"</em
+        >
+        A graph showing the HTTP error rate over time would make it easier to
+        notice a change compared with looking at individual requests.
+      </p>
+
+      <p>
+        <strong>Logs</strong> are records of events that happened in the
+        application. They can contain details about individual requests, errors,
+        warnings and other events. Logs are especially useful when I need to
+        find out what happened at a particular moment.
+      </p>
+
+      <p>
+        For example, a question that logs could answer is:
+        <em>"Which endpoint returned an HTTP 500 error?"</em>
+        In my Week 6 project, I added structured JSON request logging to the
+        Flask backend. Each request can include the HTTP method, path, response
+        status and request duration.
+      </p>
+
+      <pre><code>{
+  "event": "http_request",
+  "method": "GET",
+  "path": "/healthz",
+  "status": 200,
+  "duration_ms": 0.08
+}</code></pre>
+
+      <p>
+        I could then use <code>oc logs</code> to retrieve these records from the
+        backend pod. This made the logging part of observability something I
+        could actually test instead of only reading about it.
+      </p>
+
+      <p>
+        <strong>Traces</strong> are used to follow a request as it moves through
+        different parts of an application. This becomes especially useful when
+        an application has several services and it is not immediately obvious
+        which part is causing a delay.
+      </p>
+
+      <p>
+        For example, a tracing system could answer:
+        <em
+          >"Why did this particular request take two seconds to complete, and
+          which service caused most of the delay?"</em
+        >
+        A trace could show the time spent in the frontend, backend and database
+        separately.
+      </p>
+
+      <table>
+        <tr>
+          <th>Observability pillar</th>
+          <th>What it tells me</th>
+          <th>Example question</th>
+        </tr>
+        <tr>
+          <td><strong>Metrics</strong></td>
+          <td>Numerical values and trends over time.</td>
+          <td>Has the backend error rate increased?</td>
+        </tr>
+        <tr>
+          <td><strong>Logs</strong></td>
+          <td>Specific events and details from the application.</td>
+          <td>Which request or endpoint produced an error?</td>
+        </tr>
+        <tr>
+          <td><strong>Traces</strong></td>
+          <td>The path and timing of a request through multiple services.</td>
+          <td>Which part of the application made this request slow?</td>
+        </tr>
+      </table>
+
+      <p>
+        For this assignment I mainly implemented logging and health checks
+        rather than setting up a complete metrics and tracing system. Even
+        though the project is small, adding structured logs was useful because I
+        could retrieve information from the actual running backend with
+        <code>oc logs</code>.
+      </p>
+
+      <p class="small">
+        Source: OpenTelemetry documentation on observability signals.
+      </p>
+
+      <h3>
+        4. Explain the difference between a liveness probe and a readiness probe
+        in Kubernetes/Rahti. What happens when each fails?
+      </h3>
+
+      <p>
+        A liveness probe and a readiness probe are both health checks, but they
+        answer different questions. The easiest way I understand the difference
+        is that
+        <strong
+          >liveness asks whether the application is still alive, while readiness
+          asks whether the application is ready to receive traffic</strong
+        >.
+      </p>
+
+      <p>
+        A <strong>liveness probe</strong> is used to check whether a container
+        is still functioning. In my application, the liveness probe calls the
+        <code>/healthz</code> endpoint. This endpoint simply returns a
+        successful response when the Flask application is responding.
+      </p>
+
+      <pre><code>livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8000
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3</code></pre>
+
+      <p>
+        If the liveness probe repeatedly fails, Kubernetes can treat the
+        container as unhealthy and restart it. This is useful for situations
+        where the application is stuck or has reached a state where restarting
+        the container may recover it.
+      </p>
+
+      <p>
+        A <strong>readiness probe</strong> is different. It checks whether the
+        application is ready to receive normal traffic. In my project, the
+        readiness endpoint is <code>/readyz</code>. It tries to connect to MySQL
+        and only returns a successful response when the backend can access the
+        database.
+      </p>
+
+      <pre><code>readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 8000
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3</code></pre>
+
+      <p>
+        If the readiness probe fails, Kubernetes does not consider the pod ready
+        for normal Service traffic. Importantly, the container does not
+        necessarily get restarted just because it failed the readiness check.
+        The application can still be running but temporarily unable to serve
+        requests correctly.
+      </p>
+
+      <p>
+        I actually tested this part instead of only putting the probes in the
+        YAML file. I temporarily changed the readiness probe from
+        <code>/readyz</code> to a path that did not exist:
+      </p>
+
+      <pre><code>readinessProbe:
+  httpGet:
+    path: /not-a-real-endpoint
+    port: 8000</code></pre>
+
+      <p>
+        After applying the change, the new backend pod was still shown as
+        <code>Running</code>, but it was <code>0/1</code> ready. This was a
+        useful test because it showed the difference between liveness and
+        readiness in practice. The container itself was still running, but
+        Kubernetes did not consider it ready to receive normal traffic.
+      </p>
+
+      <p>
+        I then restored the correct <code>/readyz</code> endpoint. After the
+        probe was fixed, I also restored the SHA-tagged backend image and waited
+        for the rollout to complete. The backend became healthy again.
+      </p>
+
+      <table>
+        <tr>
+          <th>Probe</th>
+          <th>Main question</th>
+          <th>My Week 6 endpoint</th>
+          <th>What happens if it fails?</th>
+        </tr>
+        <tr>
+          <td><strong>Liveness</strong></td>
+          <td>Is the container/application still alive?</td>
+          <td><code>/healthz</code></td>
+          <td>Repeated failure can cause the container to be restarted.</td>
+        </tr>
+        <tr>
+          <td><strong>Readiness</strong></td>
+          <td>Is the pod ready to receive traffic?</td>
+          <td><code>/readyz</code></td>
+          <td>
+            The pod is marked not ready and is removed from normal Service
+            traffic until it becomes ready again.
+          </td>
+        </tr>
+      </table>
+
+      <p>
+        This was probably the part of Week 6 that made the most sense to me
+        after actually testing it. Before the practical work, I mostly thought
+        of both probes as general health checks. After deliberately breaking the
+        readiness endpoint and seeing <code>0/1</code> while the pod was still
+        running, the difference became much clearer.
+      </p>
+
+      <p class="small">
+        Source: Kubernetes documentation on liveness, readiness and startup
+        probes.
+      </p>
+
+      <!-- PART B -->
+      <h2>Part B - Hands-on: Automate &amp; Observe Your App</h2>
+
+      <div class="info">
+        <strong>Exercise:</strong> Using the multi-container app from Week 4 and
+        the Redis extension from Week 5, I added a CI/CD pipeline and basic
+        observability to the project. The practical work below shows the
+        configuration, testing and evidence.
+      </div>
+
+      <h3>1. Starting point and architecture</h3>
+
+      <p>
+        The project is the LEMP guestbook application I built in the previous
+        weeks. The frontend is served by Nginx, the backend is a Flask
+        application, MySQL stores the guestbook data, and Redis was added in
+        Week 5 for caching.
+      </p>
+
+      <div class="architecture">
+        Public URL | v +---------------+ | Nginx | | Frontend |
+        +-------+-------+ | v +---------------+ | Flask Backend| | Port 8000 |
+        +-------+-------+ | | v v +---------+ +---------+ | MySQL | | Redis |
+        +---------+ +---------+ Week 6 additions: - GitHub Actions CI/CD -
+        /healthz liveness endpoint - /readyz readiness endpoint - structured
+        JSON request logging
+      </div>
+
+      <p>
+        I kept the existing Week 5 functionality and added the Week 6 features
+        around it rather than rebuilding the application from scratch.
+      </p>
+
+      <h3>2. Checking the existing Rahti application</h3>
+
+      <p>
+        Before changing anything, I checked the existing application and backend
+        deployment in Rahti. This was useful because I wanted to make sure the
+        Week 6 work was being added to the existing project rather than
+        accidentally creating a different application.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/22-current-rahti-status.png"
+          alt="Current Rahti application and deployment status"
+        />
+        <figcaption>
+          Screenshot 22 - Current Rahti status before the Week 6 deployment
+          work.
+        </figcaption>
+      </figure>
+
+      <h3>3. Adding the liveness and readiness endpoints</h3>
+
+      <p>
+        I added two simple endpoints to <code>backend/app.py</code>. The
+        liveness endpoint is intentionally simple because its job is to show
+        that the Flask application itself is responding. The readiness endpoint
+        is a little more useful because it checks the MySQL connection before
+        returning that the backend is ready.
+      </p>
+
+      <pre><code># Kubernetes liveness probe
+@app.get("/healthz")
+def healthz():
+    return jsonify({"status": "ok"}), 200
+
+# Kubernetes readiness probe
+@app.get("/readyz")
+def readyz():
+    try:
+        conn = get_db_connection()
+        conn.close()
+        return jsonify({"status": "ready"}), 200
+    except Exception:
+        return jsonify({"status": "not ready"}), 503</code></pre>
+
+      <p>
+        I chose these endpoints because they make the two checks easy to test
+        from inside the backend container and easy for Kubernetes to call.
+      </p>
+
+      <h3>4. Testing the health endpoints</h3>
+
+      <p>
+        I tested the liveness endpoint and received HTTP 200 with the expected
+        JSON response.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/23a-healthz-200.png"
+          alt="Healthz endpoint returning HTTP 200"
+        />
+        <figcaption>
+          Screenshot 23a - The <code>/healthz</code> liveness endpoint returned
+          HTTP 200.
+        </figcaption>
+      </figure>
+
+      <p>
+        I also tested the readiness endpoint. When the backend was connected to
+        the working MySQL deployment in Rahti, it returned HTTP 200 and
+        <code>{"status":"ready"}</code>.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/23b-readyz-200.png"
+          alt="Readyz endpoint returning HTTP 200"
+        />
+        <figcaption>
+          Screenshot 23b - The <code>/readyz</code> readiness endpoint returned
+          HTTP 200 and showed that the backend was ready.
+        </figcaption>
+      </figure>
+
+      <h3>5. Configuring the probes in the backend Deployment</h3>
+
+      <p>
+        I added both probes to <code>k8s/backend-deployment.yaml</code>. Both
+        checks use HTTP on port 8000. The liveness probe calls
+        <code>/healthz</code> and the readiness probe calls
+        <code>/readyz</code>.
+      </p>
+
+      <pre><code>livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8000
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+readinessProbe:
+  httpGet:
+    path: /readyz
+    port: 8000
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 3
+  failureThreshold: 3</code></pre>
+
+      <figure>
+        <img
+          src="docs-images/24-probes-configured.png"
+          alt="Backend Deployment probe configuration"
+        />
+        <figcaption>
+          Screenshot 24 - The backend Deployment with the liveness and readiness
+          probes configured.
+        </figcaption>
+      </figure>
+
+      <p>
+        I then checked the running pod and confirmed that the probes were
+        actually present on the deployed container rather than only existing in
+        the YAML file.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/25-probes-running.png"
+          alt="Running backend pod with probes"
+        />
+        <figcaption>
+          Screenshot 25 - The backend pod running with the configured health
+          probes.
+        </figcaption>
+      </figure>
+
+      <h3>6. Deliberately failing the readiness probe</h3>
+
+      <p>
+        The assignment specifically asked for the readiness check to be
+        deliberately failed. To test this, I temporarily changed the readiness
+        path from <code>/readyz</code> to a path that does not exist.
+      </p>
+
+      <pre><code>readinessProbe:
+  httpGet:
+    path: /not-a-real-endpoint
+    port: 8000</code></pre>
+
+      <p>
+        After applying this temporary change, a new backend pod was created. The
+        pod was still
+        <code>Running</code>, but it was not ready, so it showed
+        <code>0/1</code>. This was exactly the behaviour I wanted to
+        demonstrate: a readiness failure keeps the pod from being treated as
+        ready for normal Service traffic, rather than automatically treating the
+        container as dead.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/26-readiness-failure.png"
+          alt="Backend pod showing readiness failure"
+        />
+        <figcaption>
+          Screenshot 26 - Deliberate readiness failure. The pod remained running
+          but was not ready.
+        </figcaption>
+      </figure>
+
+      <p>
+        After taking the screenshot, I restored the correct
+        <code>/readyz</code> path. Applying the Deployment manifest reset the
+        image field to the image written in the manifest, so I then used
+        <code>oc set image</code> to put the CI/CD image back on the Deployment
+        and waited for the rollout to complete.
+      </p>
+
+      <div class="success">
+        <strong>Result:</strong> The deliberate failure was temporary. I
+        restored the working <code>/readyz</code> probe and confirmed that the
+        backend became healthy again.
+      </div>
+
+      <h3>7. Adding structured logging</h3>
+
+      <p>
+        I also added a small amount of structured logging to the Flask backend.
+        The goal was to make each HTTP request easier to inspect. Instead of
+        only printing a normal text message, the backend writes JSON containing
+        the event name, HTTP method, request path, response status and request
+        duration.
+      </p>
+
+      <pre><code>logging.basicConfig(
+    level=logging.INFO,
+    format="%(message)s"
+)
+logger = logging.getLogger(__name__)
+
+@app.before_request
+def start_request_timer():
+    request.start_time = time.perf_counter()
+
+@app.after_request
+def log_request(response):
+    duration_ms = round(
+        (time.perf_counter() - request.start_time) * 1000,
+        2
+    )
+    logger.info(json.dumps({
+        "event": "http_request",
+        "method": request.method,
+        "path": request.path,
+        "status": response.status_code,
+        "duration_ms": duration_ms
+    }))
+    return response</code></pre>
+
+      <p>
+        This means that a request such as <code>GET /healthz</code> produces a
+        log entry containing information like the request path and status code.
+        It is useful because I can retrieve the logs with
+        <code>oc logs</code> without needing to change the application code
+        again just to investigate a request.
+      </p>
+
+      <h3>8. Retrieving the structured logs from Rahti</h3>
+
+      <p>
+        I used <code>oc logs</code> on the running backend pod and could see the
+        JSON request records. The logs included successful calls to both
+        <code>/healthz</code> and <code>/readyz</code>.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/27-backend-logs.png"
+          alt="Structured backend logs from oc logs"
+        />
+        <figcaption>
+          Screenshot 27 - Structured JSON request logs retrieved with
+          <code>oc logs</code>.
+        </figcaption>
+      </figure>
+
+      <p>A simplified example of the output is:</p>
+
+      <pre><code>{"event": "http_request", "method": "GET", "path": "/healthz", "status": 200, "duration_ms": 0.08}
+{"event": "http_request", "method": "GET", "path": "/readyz", "status": 200, "duration_ms": 1.23}</code></pre>
+
+      <p>
+        I found this more useful than a plain message because the fields have a
+        consistent structure. For a larger application, these fields could be
+        collected by a logging system and searched or used as part of an alert.
+      </p>
+
+      <h3>9. Local verification before using the pipeline</h3>
+
+      <p>
+        Before relying on the GitHub Actions deployment, I also tested the
+        backend locally. I rebuilt the backend image with Docker Compose and
+        checked that the Python application could be compiled. I also tested the
+        new endpoints.
+      </p>
+
+      <pre><code>docker compose -f docker-compose.dev.yml build backend
+
+docker run --rm lemp-rahti-assignment-backend:latest \
+  python -m py_compile /app/app.py</code></pre>
+
+      <p>
+        The image build succeeded and the Python compile check succeeded. The
+        local
+        <code>/healthz</code> endpoint returned <code>{"status":"ok"}</code>.
+        The local <code>/readyz</code> check returned
+        <code>{"status":"not ready"}</code> because my local MySQL
+        credentials/data did not match the running local database. I checked the
+        MySQL connection separately and confirmed that the problem was database
+        access, not the Flask route itself.
+      </p>
+
+      <div class="warning">
+        I did not run <code>docker compose down -v</code> to try to fix the
+        local database because that command can remove Docker volumes. I wanted
+        to avoid deleting the existing local database data just for this test.
+      </div>
+
+      <h3>10. Creating the GitHub Actions CI/CD workflow</h3>
+
+      <p>
+        I created <code>.github/workflows/week6-cicd.yml</code>. The workflow is
+        triggered when code is pushed to the <code>week6</code> branch. I used
+        the separate Week 6 branch so the protected Week 5/main version stayed
+        unchanged.
+      </p>
+
+      <pre><code>name: Week 6 CI/CD
+
+on:
+  push:
+    branches:
+      - week6
+
+jobs:
+  build-push-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build backend image
+        run: |
+          docker build \
+            -f backend/Dockerfile \
+            -t ${{ secrets.DOCKERHUB_USERNAME }}/lemp-rahti-backend:${{ github.sha }} \
+            .
+
+      - name: Push backend image
+        run: |
+          docker push \
+            ${{ secrets.DOCKERHUB_USERNAME }}/lemp-rahti-backend:${{ github.sha }}
+
+      - name: Install OpenShift CLI
+        uses: redhat-actions/oc-installer@v1
+
+      - name: Log in to Rahti
+        uses: redhat-actions/oc-login@v1
+        with:
+          openshift_server_url: https://api.2.rahti.csc.fi:6443
+          openshift_token: ${{ secrets.RAHTI_TOKEN }}
+          namespace: cloud-services-assignment4
+
+      - name: Apply backend configuration and deploy image
+        run: |
+          oc apply -f k8s/backend-deployment.yaml
+
+          oc set image deployment/backend \
+            backend=${{ secrets.DOCKERHUB_USERNAME }}/lemp-rahti-backend:${{ github.sha }}
+
+          oc rollout status deployment/backend --timeout=180s</code></pre>
+
+      <p>
+        The image tag uses <code>${{ github.sha }}</code>. This means each
+        workflow run produces a traceable image tag based on the exact Git
+        commit that triggered the workflow. This is better for this assignment
+        than always using a tag such as <code>latest</code>, because I can see
+        which commit produced the deployed image.
+      </p>
+
+      <h3>11. Setting up GitHub repository secrets</h3>
+
+      <p>
+        The workflow needs credentials for Docker Hub and Rahti, but none of the
+        actual secret values are stored in the repository. I created the
+        following GitHub repository secrets:
+      </p>
+
+      <table>
+        <tr>
+          <th>Secret</th>
+          <th>Purpose</th>
+        </tr>
+        <tr>
+          <td><code>DOCKERHUB_USERNAME</code></td>
+          <td>
+            Used to identify the Docker Hub account for the backend image.
+          </td>
+        </tr>
+        <tr>
+          <td><code>DOCKERHUB_TOKEN</code></td>
+          <td>
+            Allows GitHub Actions to authenticate to Docker Hub and push the
+            image.
+          </td>
+        </tr>
+        <tr>
+          <td><code>RAHTI_TOKEN</code></td>
+          <td>
+            Allows GitHub Actions to authenticate to the Rahti/OpenShift
+            project.
+          </td>
+        </tr>
+      </table>
+
+      <p>
+        The documentation intentionally does not contain the secret values. The
+        workflow only references the names through the GitHub Actions
+        <code>secrets</code> context.
+      </p>
+
+      <h3>12. Triggering the pipeline</h3>
+
+      <p>
+        After committing the Week 6 changes, I pushed the branch to GitHub. The
+        push triggered the Week 6 GitHub Actions workflow automatically.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/28-github-actions-workflow.png"
+          alt="GitHub Actions Week 6 workflow"
+        />
+        <figcaption>
+          Screenshot 28 - The Week 6 GitHub Actions workflow showing the CI/CD
+          job.
+        </figcaption>
+      </figure>
+
+      <h3>13. Successful GitHub Actions run</h3>
+
+      <p>
+        The workflow completed successfully. It checked out the repository,
+        logged into Docker Hub, built the backend image, pushed the image,
+        installed the OpenShift CLI, logged into Rahti, updated the backend
+        Deployment and waited for the rollout.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/29-github-actions-success.png"
+          alt="Successful GitHub Actions workflow run"
+        />
+        <figcaption>
+          Screenshot 29 - Successful GitHub Actions run for the Week 6 CI/CD
+          pipeline.
+        </figcaption>
+      </figure>
+
+      <div class="success">
+        <strong>Pipeline result:</strong> The workflow did more than build the
+        image. It also changed the actual backend deployment in Rahti and waited
+        for the rollout to complete.
+      </div>
+
+      <h3>14. Evidence that the push caused a deployment change</h3>
+
+      <p>
+        The deployment step uses the Git commit SHA as the Docker image tag. One
+        deployed backend image from the successful run was:
+      </p>
+
+      <pre><code>zainabf123/lemp-rahti-backend:36b464dfa801ada7e6ba67140c485934e008bfe9</code></pre>
+
+      <p>I checked the Deployment image directly in Rahti using:</p>
+
+      <pre><code>oc get deployment backend \
+  -o jsonpath="{.spec.template.spec.containers[0].image}"</code></pre>
+
+      <p>
+        The returned image matched the commit SHA from the CI/CD run. This gives
+        evidence that the workflow changed the real Deployment instead of only
+        producing a successful GitHub Actions checkmark.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/30-automatic-deployment.png"
+          alt="Automatic backend deployment in Rahti"
+        />
+        <figcaption>
+          Screenshot 30 - Evidence of the backend deployment changing after the
+          CI/CD workflow ran.
+        </figcaption>
+      </figure>
+
+      <h3>15. Final application verification</h3>
+
+      <p>
+        After the deployment finished, I opened the public guestbook application
+        again. The application was working and the existing Week 5 guestbook
+        data was still visible.
+      </p>
+
+      <figure>
+        <img
+          src="docs-images/31-final-working-application.png"
+          alt="Final working public guestbook application"
+        />
+        <figcaption>
+          Screenshot 31 - Final public application after the Week 6 deployment.
+          The existing guestbook messages are still visible.
+        </figcaption>
+      </figure>
+
+      <p>
+        I did not add a new guestbook message just for the screenshot. I used
+        the existing application state to confirm that the frontend was still
+        reachable after the backend deployment.
+      </p>
+
+      <h3>16. Problems I encountered and how I solved them</h3>
+
+      <table>
+        <tr>
+          <th>Problem</th>
+          <th>What happened</th>
+          <th>Solution</th>
+        </tr>
+        <tr>
+          <td>Local readiness check failed</td>
+          <td>
+            The local <code>/readyz</code> endpoint returned
+            <code>503</code> because the local MySQL credentials/data did not
+            match what the backend expected.
+          </td>
+          <td>
+            I tested the MySQL connection separately and kept the local database
+            intact instead of deleting the Docker volume. The same readiness
+            check worked in the actual Rahti deployment.
+          </td>
+        </tr>
+        <tr>
+          <td>Readiness probe deliberately failed</td>
+          <td>
+            I temporarily changed the probe path to a non-existing endpoint. The
+            new pod stayed
+            <code>Running</code> but became <code>0/1</code> ready.
+          </td>
+          <td>
+            I restored <code>/readyz</code>, reapplied the correct configuration
+            and then used <code>oc set image</code> to put the CI/CD image back
+            on the Deployment.
+          </td>
+        </tr>
+        <tr>
+          <td>Deployment manifest image changed during restore</td>
+          <td>
+            Applying the Kubernetes manifest restored the image written in the
+            YAML, which was
+            <code>1.0.0</code>, instead of the SHA-tagged CI/CD image.
+          </td>
+          <td>
+            I explicitly ran <code>oc set image deployment/backend</code> with
+            the SHA-tagged image and waited for the rollout to finish.
+          </td>
+        </tr>
+        <tr>
+          <td>Protecting the previous week's work</td>
+          <td>
+            I did not want to make unnecessary changes to the protected Week
+            5/main version.
+          </td>
+          <td>
+            I kept the Week 6 work on the separate <code>week6</code> branch and
+            documented the new work there.
+          </td>
+        </tr>
+      </table>
+
+      <h3>17. Alerting and a realistic alert rule</h3>
+
+      <p>
+        I did not install a full Prometheus/Grafana alerting system as part of
+        this week's practical work. However, I did create structured logs and
+        tested the health checks, so I now have useful signals that could be
+        used for alerting.
+      </p>
+
+      <p>
+        Based on the logs and health checks I collected, one practical alert for
+        this application would be:
+      </p>
+
+      <div class="warning">
+        <strong>Example alert:</strong> Alert if the backend returns HTTP 5xx
+        responses for more than 5% of requests for five minutes, or if the
+        backend Deployment has no ready pod for several minutes.
+      </div>
+
+      <p>
+        I would not alert on every individual <code>GET /healthz</code> request
+        or every short delay, because that would create unnecessary
+        notifications. The readiness failure test also showed why an alert about
+        "no ready backend" could be useful: the pod can still be running while
+        not being able to receive normal application traffic.
+      </p>
+
+      <p>
+        For a real production setup, I would connect these signals to a
+        monitoring/alerting system and tune the thresholds after observing
+        normal traffic. For this student project, keeping the number of alerts
+        small makes more sense than trying to monitor every possible metric.
+      </p>
+
+      <h3>18. What I learned from Week 6</h3>
+
+      <p>
+        The main thing I learned from this week is that deployment automation is
+        not just about building a Docker image. The useful part is connecting
+        the whole process together: a code change starts the workflow, the image
+        is built and stored, the cluster is updated, and the rollout is checked.
+      </p>
+
+      <p>
+        I also understood the difference between liveness and readiness much
+        better after deliberately breaking the readiness endpoint. Before
+        testing it, I mostly thought of both probes as just "health checks".
+        Seeing the pod remain running but become <code>0/1</code> made the
+        difference much clearer.
+      </p>
+
+      <p>
+        The structured logging part was also useful because I could see real
+        request information from the running application using
+        <code>oc logs</code>. This made observability feel more practical than
+        just learning the definitions of metrics, logs and traces.
+      </p>
+
+      <h3>19. Final Week 6 result</h3>
+
+      <div class="success">
+        <strong>Completed:</strong>
+        <ul>
+          <li>GitHub Actions workflow created for the Week 6 branch.</li>
+          <li>Backend container image built and pushed to Docker Hub.</li>
+          <li>
+            Rahti backend Deployment updated automatically with the Git commit
+            SHA image tag.
+          </li>
+          <li>Deployment rollout checked by the CI/CD workflow.</li>
+          <li><code>/healthz</code> liveness endpoint added and tested.</li>
+          <li>
+            <code>/readyz</code> readiness endpoint added and tested against
+            MySQL.
+          </li>
+          <li>
+            Liveness and readiness probes configured in the backend Deployment.
+          </li>
+          <li>Readiness failure deliberately tested and then restored.</li>
+          <li>
+            Structured JSON request logging added and retrieved with
+            <code>oc logs</code>.
+          </li>
+          <li>Final public application checked after deployment.</li>
+          <li>
+            Registry and Rahti credentials kept in GitHub repository secrets
+            instead of Git.
+          </li>
+        </ul>
+      </div>
+
+      <h2>Conclusion</h2>
+
+      <p>
+        Week 6 extended the guestbook project from simply running on Rahti to
+        having a basic automated deployment and observability setup. GitHub
+        Actions now handles the backend image build and deployment, while
+        Kubernetes health probes help Rahti distinguish between a running
+        container and a pod that is actually ready to receive traffic.
+        Structured logs also make it easier to see what the backend is doing.
+      </p>
+
+      <p>
+        The most useful part for me was testing the readiness failure on
+        purpose. It showed that a deployment can look like it is running while
+        the application is not actually ready to serve traffic. Overall, the
+        Week 6 work gave me a better understanding of how CI/CD and basic
+        observability fit together with the Kubernetes deployment I built in the
+        earlier weeks.
+      </p>
+
+      <h2>Sources</h2>
+
+      <ul>
+        <li>
+          GitHub Docs - Workflows:
+          <a
+            href="https://docs.github.com/en/actions/concepts/workflows-and-actions/workflows"
+          >
+            https://docs.github.com/en/actions/concepts/workflows-and-actions/workflows
+          </a>
+        </li>
+        <li>
+          GitHub Docs - Secrets:
+          <a
+            href="https://docs.github.com/en/actions/concepts/security/secrets"
+          >
+            https://docs.github.com/en/actions/concepts/security/secrets
+          </a>
+        </li>
+        <li>
+          Atlassian - Continuous Integration:
+          <a
+            href="https://www.atlassian.com/continuous-delivery/continuous-integration"
+          >
+            https://www.atlassian.com/continuous-delivery/continuous-integration
+          </a>
+        </li>
+        <li>
+          Atlassian - Continuous Integration vs. Delivery vs. Deployment:
+          <a
+            href="https://www.atlassian.com/continuous-delivery/principles/continuous-integration-vs-delivery-vs-deployment"
+          >
+            https://www.atlassian.com/continuous-delivery/principles/continuous-integration-vs-delivery-vs-deployment
+          </a>
+        </li>
+        <li>
+          Kubernetes - Configure Liveness, Readiness and Startup Probes:
+          <a
+            href="https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/"
+          >
+            https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+          </a>
+        </li>
+        <li>
+          OpenTelemetry - Signals:
+          <a href="https://opentelemetry.io/docs/concepts/signals/">
+            https://opentelemetry.io/docs/concepts/signals/
+          </a>
+        </li>
+        <li>
+          Red Hat OpenShift - GitOps:
+          <a
+            href="https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html-single/gitops/index"
+          >
+            https://docs.redhat.com/en/documentation/openshift_container_platform/4.17/html-single/gitops/index
+          </a>
+        </li>
+        <li>
+          Argo CD Documentation:
+          <a href="https://argo-cd.readthedocs.io/en/stable/">
+            https://argo-cd.readthedocs.io/en/stable/
+          </a>
+        </li>
+      </ul>
+
+      <p class="small">
+        All screenshots used in this document are stored in the project's
+        <code>frontend/docs-images/</code> directory and are referenced with
+        relative paths so the documentation can be served together with the
+        frontend.
+      </p>
+    </div>
+  </body>
+</html>
