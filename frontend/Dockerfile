@@ -4,6 +4,7 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY index.html /usr/share/nginx/html/
 COPY docs.html /usr/share/nginx/html/
 COPY week5.html /usr/share/nginx/html/
+COPY week6.html /usr/share/nginx/html/
 COPY docs-images /usr/share/nginx/html/docs-images/
 
 # Remove the default server configuration.
