@@ -714,7 +714,107 @@ backend/requirements.txt
 
 The commit was pushed successfully to the main branch.
 
-# 22. Summary
+## 22. Week 6 — CI/CD and Observability
+
+Week 6 added automated CI/CD deployment, Kubernetes health checks, and structured logging to the existing Rahti application.
+
+### CI/CD pipeline
+
+A GitHub Actions workflow was added at:
+
+.github/workflows/week6-cicd.yml
+
+The workflow is triggered by pushes to the `week6` branch.
+
+The pipeline:
+
+1. Checks out the repository.
+2. Builds the backend Docker image.
+3. Tags the image using the Git commit SHA.
+4. Pushes the image to Docker Hub.
+5. Logs in to CSC Rahti using a GitHub Actions secret.
+6. Applies the backend Kubernetes configuration.
+7. Updates the backend Deployment with the newly built image.
+8. Waits for the Deployment rollout to complete.
+
+The Docker Hub and Rahti credentials are stored as GitHub repository secrets and are not committed to the repository.
+
+The deployed Week 6 backend image was:
+
+zainabf123/lemp-rahti-backend:36b464dfa801ada7e6ba67140c485934e008bfe9
+
+Using the Git commit SHA as the image tag provides traceability between the source commit and the deployed container image.
+
+### Health checks
+
+The backend was extended with Kubernetes liveness and readiness endpoints.
+
+The liveness endpoint is:
+
+```text
+/healthz
+
+It returns HTTP 200 when the backend process is running.
+
+The readiness endpoint is:
+
+/readyz
+
+It checks the MySQL connection and returns HTTP 200 when the backend is ready to receive traffic. If the database connection cannot be established, it returns HTTP 503.
+
+The backend Deployment uses these endpoints as Kubernetes probes.
+
+The liveness probe checks whether the application is alive, while the readiness probe determines whether the Pod should receive application traffic.
+
+A deliberate readiness failure was also tested. When the readiness endpoint was temporarily changed to an invalid path, the backend container remained running but the Pod became not ready. The correct readiness configuration was then restored.
+
+Structured logging
+
+Structured JSON request logging was added to the Flask backend.
+
+The logs include:
+
+event
+HTTP method
+request path
+response status
+request duration
+
+Example:
+
+{
+  "event": "http_request",
+  "method": "GET",
+  "path": "/healthz",
+  "status": 200,
+  "duration_ms": 0.08
+}
+
+This provides machine-readable application logs that can be used for troubleshooting and monitoring.
+
+Week 6 verification
+
+The Week 6 implementation was verified through:
+
+successful GitHub Actions execution
+successful Docker image push
+successful Rahti Deployment rollout
+successful /healthz response
+successful /readyz response
+successful liveness and readiness probe configuration
+deliberate readiness-failure testing
+structured backend logs
+final public application verification
+
+The existing Week 5 frontend continued to work after the Week 6 backend deployment.
+
+The public application remains available through the existing OpenShift Route:
+
+https://frontend-cloud-services-assignment4.2.rahtiapp.fi
+
+```
+
+# 23. Summary
 
 The original three-tier application was successfully converted from Docker Compose to Kubernetes/OpenShift resources on CSC Rahti.
 
@@ -724,6 +824,10 @@ As part of Week 5, Redis was added as an internal caching layer for the backend.
 
 The Redis Deployment and Service were successfully deployed in Rahti, the backend was updated to use the Redis Service, and the complete cache population and invalidation flow was tested successfully.
 
-```
+As part of Week 6, GitHub Actions was added to automate the backend CI/CD process. The workflow builds the backend image, pushes it to Docker Hub using a Git commit SHA tag, updates the backend Deployment in Rahti, and verifies that the rollout completes successfully.
 
-```
+The backend was also updated with Kubernetes liveness and readiness probes. The /healthz endpoint is used to verify that the backend is running, while the /readyz endpoint verifies that the backend is ready to receive traffic by checking the database connection.
+
+Structured JSON request logging was added to the backend to record HTTP requests, response status codes, and request durations. The health checks, readiness-failure behavior, structured logs, CI/CD deployment, and final public application were successfully verified.
+
+The Week 6 changes were developed on a separate `week6` branch, while the existing `main` branch and Week 5 application were kept unchanged.
