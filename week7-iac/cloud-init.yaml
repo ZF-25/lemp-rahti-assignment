@@ -1,0 +1,26 @@
+#cloud-config
+package_update: true
+packages:
+  - apache2
+
+write_files:
+  - path: /var/www/html/index.html
+    permissions: '0644'
+    owner: root:root
+    content: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Week 7 - Infrastructure as Code</title>
+      </head>
+      <body>
+        <h1>Week 7: Infrastructure as Code</h1>
+        <p>This web server was configured automatically using OpenTofu and cloud-init.</p>
+        <p>Course: CSC Cloud Services</p>
+      </body>
+      </html>
+
+runcmd:
+  - systemctl enable --now apache2

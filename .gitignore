@@ -14,3 +14,10 @@ __pycache__/
 .vscode/
 .idea/
 .DS_Store
+
+# OpenTofu/Terraform local files
+week7-iac/.terraform/
+week7-iac/terraform.tfstate
+week7-iac/terraform.tfstate.backup
+week7-iac/*.backup
+week7-iac/provider-schema.json
