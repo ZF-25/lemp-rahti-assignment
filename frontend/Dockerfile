@@ -13,3 +13,5 @@ RUN rm -f /etc/nginx/conf.d/default.conf \
     && chmod -R g=u /var/cache/nginx /var/run /etc/nginx /usr/share/nginx/html
 
 EXPOSE 8080
+
+COPY week7-iac-documentation.html /usr/share/nginx/html/
