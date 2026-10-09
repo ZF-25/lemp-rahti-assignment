@@ -13,4 +13,8 @@
   network {
     name = var.network_name
   }
+
+  lifecycle {
+    ignore_changes = [user_data]
+  }
 }
