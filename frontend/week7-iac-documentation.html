@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Cloud Services - Week 7 Documentation</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+        line-height: 1.6;
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 30px;
+        color: #222;
+        background: #f5f5f5;
+      }
+      .container {
+        background: #fff;
+        padding: 40px;
+        border-radius: 8px;
+      }
+      h1,
+      h2 {
+        color: #1f3c5b;
+      }
+      h2 {
+        border-bottom: 2px solid #ddd;
+        padding-bottom: 5px;
+        margin-top: 35px;
+      }
+      h3 {
+        color: #2d526f;
+        margin-top: 28px;
+      }
+      code {
+        background: #f0f0f0;
+        padding: 2px 5px;
+        border-radius: 3px;
+      }
+      pre {
+        background: #f4f4f4;
+        padding: 15px;
+        overflow-x: auto;
+        border-left: 4px solid #1f3c5b;
+        white-space: pre-wrap;
+      }
+      .info,
+      .success,
+      .warning {
+        padding: 15px;
+        margin: 20px 0;
+      }
+      .info {
+        background: #eaf4fb;
+        border-left: 5px solid #3498db;
+      }
+      .success {
+        background: #eaf7ea;
+        border-left: 5px solid #2e8b57;
+      }
+      .warning {
+        background: #fff7df;
+        border-left: 5px solid #d39e00;
+      }
+      figure {
+        text-align: center;
+        margin: 25px 0;
+      }
+      figure img {
+        max-width: 100%;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      figcaption {
+        margin-top: 8px;
+        font-size: 0.95em;
+        color: #555;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 20px 0;
+      }
+      th,
+      td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: left;
+        vertical-align: top;
+      }
+      th {
+        background: #f0f0f0;
+      }
+      .small {
+        font-size: 0.9em;
+        color: #555;
+      }
+      a {
+        color: #06c;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Cloud Services - Week 7 Documentation</h1>
+      <p><strong>Prepared by Zainab Fatima</strong></p>
+      <p>
+        This documentation covers my Week 7 Infrastructure as Code work using
+        OpenTofu and CSC cPouta. I kept the work in a separate
+        <code>week7-iac</code> directory and branch so it would not interfere
+        with my earlier assignment. The aim was to describe the virtual machine
+        and public web access in configuration files, inspect plans before
+        making changes, and understand what happens when the configuration and
+        running infrastructure do not fully match.
+      </p>
+      <div class="info">
+        <strong>Project:</strong> CSC Cloud Services - Week 7<br /><strong
+          >Cloud:</strong
+        >
+        CSC cPouta<br /><strong>Tool:</strong> OpenTofu 1.13.0<br /><strong
+          >Repository:</strong
+        >
+        <a href="https://github.com/ZF-25/lemp-rahti-assignment"
+          >lemp-rahti-assignment</a
+        ><br /><strong>Branch:</strong> <code>week7-iac</code><br /><strong
+          >Public website:</strong
+        >
+        <a href="https://week7-iac-cs.duckdns.org"
+          >https://week7-iac-cs.duckdns.org</a
+        >
+      </div>
+      <p>
+        I kept the Week 1 VM, <code>cloud-services-vm</code>, separate and did
+        not change it. The Week 7 VM is <code>week7-iac-vm</code>. This
+        separation mattered because I wanted to test the new configuration
+        without risking the previous assignment.
+      </p>
+
+      <h2>Part A - Theory Questions</h2>
+      <h3>
+        1. What is Infrastructure as Code, and which problems does it solve?
+      </h3>
+      <p>
+        Infrastructure as Code (IaC) means describing infrastructure in files
+        instead of relying only on clicking through a cloud dashboard and
+        remembering each setting. In my Week 7 work, the OpenTofu files describe
+        the VM's name, image, flavor, SSH key pair, security group, network,
+        cloud-init data, floating IP and outputs. I can review these files in
+        Git, and <code>tofu plan</code> shows the changes OpenTofu expects
+        before I apply them.
+      </p>
+      <p>
+        This helps make deployments more consistent. If I had to create another
+        similar server manually, I could forget a setting or choose a different
+        value. With IaC, the intended setup is written down and another person
+        can review it. The plan also helps me spot changes that might be
+        disruptive before they happen.
+      </p>
+      <p>
+        I also noticed a limitation in my own setup: not every part of the
+        environment was defined in code. The VM and floating IP were described
+        in OpenTofu, but the security group and its rules already existed in
+        cPouta and were not fully created as OpenTofu resources. The floating IP
+        association used an existing port ID too. Therefore, the configuration
+        is not yet completely reproducible from code alone.
+      </p>
+
+      <h3>
+        2. Explain declarative and imperative automation. What does idempotency
+        mean?
+      </h3>
+      <p>
+        Declarative automation describes the result I want, while imperative
+        automation describes the steps to carry it out. OpenTofu is mainly
+        declarative: I state that I want a VM with a particular image, flavor,
+        key pair and network, and OpenTofu compares the configuration with its
+        state and the cloud resources to calculate a plan. Commands such as
+        installing Apache with <code>apt</code> and enabling it with
+        <code>systemctl</code> are imperative because they tell the machine
+        which actions to perform.
+      </p>
+      <p>
+        Idempotency means repeating an operation with the same intended inputs
+        should leave the system in the same intended state rather than
+        continually making extra changes. This matters in automation because a
+        deployment may be run more than once. A well-designed configuration
+        should check the desired state and avoid unnecessary changes when the
+        system is already correct.
+      </p>
+      <p>
+        In my practical work, cloud-init was meant to install Apache when the VM
+        was created. The original user-data file had a UTF-8 byte-order mark
+        before the <code>#cloud-config</code> header, and the cloud-init log
+        reported that the user data was unhandled. I removed the BOM from the
+        local file, but OpenTofu then proposed replacing the existing VM because
+        the user-data hash had changed. I did not apply that replacement because
+        the server was already running. I installed Apache on the existing VM
+        and verified that the page worked. This showed me that correcting a
+        configuration file does not automatically rerun cloud-init on an
+        existing machine.
+      </p>
+
+      <h3>3. Why was OpenTofu created? Compare Terraform and OpenTofu.</h3>
+      <p>
+        OpenTofu is an open-source Infrastructure as Code tool that uses HCL and
+        a workflow similar to Terraform: initialize providers, validate
+        configuration, review a plan, and then apply approved changes. It was
+        created as a community-driven fork after HashiCorp changed Terraform's
+        license from the Mozilla Public License to the Business Source License
+        in 2023. The fork provides an open-source path for users who want a
+        community-governed tool under an open license.
+      </p>
+      <p>
+        For my cPouta task, the day-to-day workflow was very similar: I wrote
+        resource definitions, initialized the OpenStack provider, validated the
+        files and reviewed the plan. The choice can matter to a company because
+        of licensing, governance, support, provider compatibility and existing
+        workflows. OpenTofu was suitable for my assignment because it supported
+        the OpenStack provider and let me practise the plan-before-apply
+        approach with HCL.
+      </p>
+
+      <h3>
+        4. What is the state file used for, and why should it not be committed
+        to Git?
+      </h3>
+      <p>
+        The state file records the relationship between resources declared in
+        the configuration and resources OpenTofu manages. It stores resource
+        identifiers and attributes needed when OpenTofu refreshes the state and
+        calculates a plan. In this project, the local state allowed OpenTofu to
+        recognise the Week 7 VM and floating IP instead of treating every plan
+        as a completely new deployment.
+      </p>
+      <p>
+        State should not normally be committed to a public Git repository
+        because it can expose infrastructure details and, depending on the
+        resources and provider, sensitive values. Multiple people using separate
+        state copies can also create conflicts. Teams usually use a remote
+        backend with access controls and locking. For this assignment, I added
+        the Week 7 state file, provider-schema output and local OpenTofu working
+        directory to the ignore rules. I kept credentials and my private SSH key
+        outside the repository.
+      </p>
+
+      <h2>Part B - Hands-on: OpenTofu and cPouta</h2>
+      <h3>1. Starting point and resources</h3>
+      <p>
+        I used OpenTofu 1.13.0 on Windows PowerShell and the OpenStack provider.
+        The configuration is in <code>week7-iac/</code>. The main files are
+        <code>versions.tf</code>, <code>provider.tf</code>,
+        <code>variables.tf</code>, <code>main.tf</code>,
+        <code>cloud-init.yaml</code>, <code>floating_ip.tf</code>,
+        <code>floating_ip_association.tf</code> and <code>outputs.tf</code>.
+      </p>
+      <p>
+        The Week 7 VM used Ubuntu 24.04, flavor <code>standard.small</code>, key
+        pair <code>cloud-services-key</code>, network
+        <code>project_2020498</code> and security group
+        <code>week7-iac-security</code>. Its private IP was
+        <code>192.168.1.152</code> and its public floating IP was
+        <code>86.50.22.185</code>. The earlier
+        <code>cloud-services-vm</code> remained present.
+      </p>
+      <figure>
+        <img
+          src="docs-images/week7-01-existing-vm.png"
+          alt="Existing Week 1 VM"
+        />
+        <figcaption>
+          Screenshot 1 - The Week 1 VM remained present and separate from the
+          Week 7 VM.
+        </figcaption>
+      </figure>
+      <figure>
+        <img
+          src="docs-images/week7-02-existing-key-pair.png"
+          alt="Existing SSH key pair"
+        />
+        <figcaption>
+          Screenshot 2 - Existing cPouta SSH key pair used by the Week 7
+          instance.
+        </figcaption>
+      </figure>
+
+      <h3>2. Configuration, variables and outputs</h3>
+      <p>
+        I used variables for the instance name, image, flavor, key pair,
+        security group and network. This makes the resource easier to read and
+        lets me change values without editing the resource body. The outputs
+        report the instance name, private IP, floating IP and assignment label.
+      </p>
+      <pre><code>resource "openstack_compute_instance_v2" "web" {
+  name        = var.instance_name
+  image_name  = var.image_name
+  flavor_name = var.flavor_name
+  key_pair    = var.key_pair_name
+
+  security_groups = [var.security_group_name]
+
+  user_data = file("${path.module}/cloud-init.yaml")
+
+  network {
+    name = var.network_name
+  }
+}</code></pre>
+      <p>
+        The floating IP was defined separately and associated with the VM's
+        existing network port. One limitation is that the association currently
+        uses a fixed port ID instead of deriving the port from the compute
+        resource. If the VM is replaced, that ID may no longer be valid. The
+        security group and its rules were also configured in cPouta rather than
+        fully defined as OpenTofu resources.
+      </p>
+      <figure>
+        <img src="docs-images/week7-04-iac-files.png" alt="Week 7 IaC files" />
+        <figcaption>
+          Screenshot 3 - Week 7 OpenTofu files in the project directory.
+        </figcaption>
+      </figure>
+      <figure>
+        <img
+          src="docs-images/week7-03-opentofu-version.png"
+          alt="OpenTofu version"
+        />
+        <figcaption>
+          Screenshot 4 - OpenTofu version used for the assignment.
+        </figcaption>
+      </figure>
+      <figure>
+        <img
+          src="docs-images/week7-05-validation.png"
+          alt="OpenTofu validation"
+        />
+        <figcaption>Screenshot 5 - Configuration validation.</figcaption>
+      </figure>
+
+      <h3>3. Applying and checking the server</h3>
+      <p>
+        I initialized the provider and validated the configuration before
+        applying it. The Week 7 instance and floating IP were created and became
+        active. I connected over SSH using the private key stored on my own
+        computer; the key and cloud credentials were not committed to Git.
+      </p>
+      <p>
+        The initial cloud-init run did not install Apache because the user-data
+        file contained a BOM before the cloud-config header. I checked the
+        cloud-init status and log, removed the BOM from the local file and
+        verified that the file began with <code>#cloud-config</code>. Since
+        OpenTofu proposed replacing the running instance after this change, I
+        did not apply the replacement. To keep the current server available, I
+        installed Apache on the running VM and checked that the service was
+        active and returned HTTP 200 locally.
+      </p>
+      <figure>
+        <img src="docs-images/week7-06-tofu-plan.png" alt="OpenTofu plan" />
+        <figcaption>
+          Screenshot 6 - Plan review before applying infrastructure changes.
+        </figcaption>
+      </figure>
+      <figure>
+        <img src="docs-images/week7-07-tofu-apply.png" alt="OpenTofu apply" />
+        <figcaption>
+          Screenshot 7 - OpenTofu apply output from the initial deployment.
+        </figcaption>
+      </figure>
+      <figure>
+        <img src="docs-images/week7-08-new-vm.png" alt="Week 7 VM" />
+        <figcaption>Screenshot 8 - Week 7 VM running in cPouta.</figcaption>
+      </figure>
+      <figure>
+        <img
+          src="docs-images/week7-09-web-server.png"
+          alt="SSH and Apache status"
+        />
+        <figcaption>
+          Screenshot 9 - SSH access and Apache service status on the VM.
+        </figcaption>
+      </figure>
+
+      <h3>4. Network security and public HTTP access</h3>
+      <p>
+        The Week 7 security group allowed inbound SSH on TCP port 22 from the
+        configured client address, HTTP on port 80 from the Internet, and later
+        HTTPS on port 443 from the Internet. Outbound IPv4 and IPv6 traffic was
+        allowed. Restricting SSH to a specific source address is safer than
+        opening port 22 to all addresses. The security group existed in cPouta
+        and its rules were not all managed as individual OpenTofu resources in
+        this version.
+      </p>
+      <p>
+        After Apache was running, I tested the page through the public floating
+        IP and confirmed that port 80 was reachable. The page displayed the Week
+        7 heading and explained that the server had been configured for the
+        Infrastructure as Code assignment.
+      </p>
+      <figure>
+        <img
+          src="docs-images/week7-10-public-webpage.png"
+          alt="Week 7 public webpage"
+        />
+        <figcaption>
+          Screenshot 10 - The Week 7 page reachable through the public floating
+          IP.
+        </figcaption>
+      </figure>
+
+      <h3>5. Experiment 1 - Changing cloud-init configuration</h3>
+      <p>
+        <strong>Prediction:</strong> I expected a change to the cloud-init user
+        data to appear in the plan. Depending on how the provider treats the
+        change, it might update the instance or require replacement, so I
+        planned to inspect the proposed actions before applying anything.
+      </p>
+      <p>
+        <strong>Result:</strong> After removing the BOM from
+        <code>cloud-init.yaml</code>, <code>tofu plan</code> proposed replacing
+        the VM because the stored user-data hash differed from the corrected
+        file. The plan showed one resource to add and one to destroy. I did not
+        apply this plan because replacing the running VM could interrupt the
+        site and the floating IP association uses a fixed port ID.
+      </p>
+      <p>
+        <strong>Explanation:</strong> The plan exposed a potentially disruptive
+        change before it happened. Fixing a local file does not retroactively
+        rerun cloud-init on an existing machine. A more complete solution would
+        manage bootstrap and networking consistently and test replacement on a
+        disposable instance first.
+      </p>
+      <figure>
+        <img
+          src="docs-images/week7-11-change-experiment.png"
+          alt="User-data replacement plan"
+        />
+        <figcaption>
+          Screenshot 11 - The plan showed that the user-data change would
+          replace the VM. The proposed replacement was inspected but not
+          applied.
+        </figcaption>
+      </figure>
+
+      <h3>6. Experiment 2 - Checking for drift safely</h3>
+      <p>
+        <strong>Prediction:</strong> I expected a plan to identify differences
+        between the configuration, state and infrastructure that OpenTofu
+        manages. I also expected that changes made inside the guest operating
+        system might not be fully represented if they were not described as
+        managed resources or provisioned through an updated configuration.
+      </p>
+      <p>
+        <strong>Result:</strong> I checked the current infrastructure with a
+        plan and refresh. During troubleshooting, Apache and HTTPS were
+        configured directly on the running VM. Those guest operating system
+        changes were not represented as separate OpenTofu resources in the
+        current configuration. I did not deliberately remove a network rule or
+        damage the live server just to produce drift, because that could
+        interrupt the public site.
+      </p>
+      <p>
+        <strong>Explanation:</strong> OpenTofu can detect drift for attributes
+        of resources it manages when it refreshes state against the provider,
+        but it cannot automatically manage every manual change inside the guest
+        operating system. Since Apache and certificate files are not separate
+        resources in this configuration, a plan is not a complete audit of their
+        settings. A future improvement would be to codify the security group and
+        rules and use cloud-init or configuration management for server setup,
+        then test drift on a temporary resource.
+      </p>
+      <div class="warning">
+        <strong>Safe testing note:</strong> This was a limited drift
+        investigation rather than a destructive drift test. The refresh-only
+        plan reported no differences in the tracked remote resources. No live
+        resource was intentionally altered just to make the plan show a
+        difference.
+      </div>
+      <figure>
+        <img
+          src="docs-images/week7-12-drift-baseline.png"
+          alt="Drift investigation baseline"
+        />
+        <figcaption>
+          Screenshot 12 - Baseline evidence for the drift investigation. The
+          refresh-only plan reported no differences in the tracked remote
+          resources; guest operating-system changes such as Apache configuration
+          are not represented as separate OpenTofu resources.
+        </figcaption>
+      </figure>
+
+      <h3>7. Experiment 3 - Destroy and rebuild planning</h3>
+      <p>
+        <strong>Prediction:</strong> I expected
+        <code>tofu plan -destroy</code> to list the resources that a destroy
+        operation would remove. A plan is a preview and does not apply those
+        actions by itself.
+      </p>
+      <p>
+        <strong>Result:</strong> The destroy plan refreshed the VM, floating IP
+        and floating IP association, then listed all three for destruction. It
+        showed <code>Plan: 0 to add, 0 to change, 3 to destroy</code>. I stopped
+        at the plan stage and did not run <code>tofu destroy</code>, because it
+        would remove the working Week 7 VM and public IP association.
+      </p>
+      <p>
+        <strong>Explanation:</strong> The plan confirmed which resources
+        OpenTofu currently tracks and the consequences of destroying them. I
+        chose not to destroy the live instance simply to demonstrate rebuilding,
+        since that would make the public page unavailable and the hard-coded
+        port ID would need attention during recreation. A proper reproducibility
+        test should be carried out in a disposable environment after all
+        required resources and associations are represented in code.
+      </p>
+      <figure>
+        <img
+          src="docs-images/week7-13-destroy-plan.png"
+          alt="OpenTofu destroy plan"
+        />
+        <figcaption>
+          Screenshot 13 - The destroy plan listed the VM, floating IP
+          association and floating IP for destruction. The plan was reviewed
+          only; it was not applied.
+        </figcaption>
+      </figure>
+
+      <h3>8. Adding HTTPS</h3>
+      <p>
+        After HTTP was working, I configured HTTPS so the public page could be
+        reached through a domain name. I created the DuckDNS hostname
+        <code>week7-iac-cs.duckdns.org</code> and checked that it resolved to
+        the Week 7 floating IP, <code>86.50.22.185</code>. On the VM, I enabled
+        Apache's SSL module and default SSL site, then installed Certbot and its
+        Apache plugin.
+      </p>
+      <p>
+        Certbot successfully obtained a Let's Encrypt certificate for the
+        hostname and deployed it to Apache's SSL virtual host. I added an
+        inbound TCP 443 rule to the Week 7 security group and used
+        <code>Test-NetConnection</code> in PowerShell to check that port 443 was
+        reachable. I then opened the hostname in a browser and verified the page
+        over HTTPS. The certificate and Apache SSL setup were configured
+        manually on the VM rather than fully automated by the current OpenTofu
+        files.
+      </p>
+      <figure>
+        <img
+          src="docs-images/week7-16-https-website.png"
+          alt="Week 7 website over HTTPS"
+        />
+        <figcaption>
+          Screenshot 13 - The Week 7 website opened using its DuckDNS hostname
+          over HTTPS.
+        </figcaption>
+      </figure>
+
+      <h3>9. Git and safe handling of local files</h3>
+      <p>
+        I kept Week 7 on the separate <code>week7-iac</code> branch. The
+        repository contains the configuration and cloud-init files, while local
+        state, provider-schema output and the OpenTofu working directory are
+        ignored. The private SSH key and cloud authentication file stayed
+        outside the repository. These precautions matter because the code should
+        be shareable without publishing credentials or machine-specific state.
+      </p>
+      <p>
+        The Week 7 changes were committed and pushed to the branch. I checked
+        the final Git status and plan output before wrapping up. Local state
+        files, private keys and authentication files should remain outside the
+        repository.
+      </p>
+      <figure>
+        <img
+          src="docs-images/week7-14-final-git-status.png"
+          alt="Final Git status"
+        />
+        <figcaption>
+          Screenshot 14 - Final Git status for the Week 7 work.
+        </figcaption>
+      </figure>
+      <figure>
+        <img
+          src="docs-images/week7-15-final-plan-no-changes.png"
+          alt="Final OpenTofu plan with no changes"
+        />
+        <figcaption>
+          Screenshot 15 - Final plan output showing no changes at the time of
+          this check.
+        </figcaption>
+      </figure>
+
+      <h2>Problems I encountered and what I learned</h2>
+      <table>
+        <tr>
+          <th>Problem</th>
+          <th>What happened</th>
+          <th>What I did</th>
+        </tr>
+        <tr>
+          <td>Cloud-init user data was not processed</td>
+          <td>
+            The log reported unhandled user data beginning with a BOM before the
+            cloud-config header.
+          </td>
+          <td>
+            I removed the BOM from the local YAML file and verified its first
+            bytes. I did not apply the replacement plan because it would have
+            replaced the working VM.
+          </td>
+        </tr>
+        <tr>
+          <td>OpenTofu planned to replace the VM</td>
+          <td>
+            The user-data hash changed and the plan showed one add and one
+            destroy.
+          </td>
+          <td>
+            I reviewed the plan and stopped before applying it to protect the
+            running server.
+          </td>
+        </tr>
+        <tr>
+          <td>HTTPS was initially unreachable</td>
+          <td>
+            Apache could answer HTTPS locally, but port 443 was initially
+            blocked externally.
+          </td>
+          <td>
+            I added an HTTPS ingress rule, checked TCP 443, and verified the
+            hostname in the browser.
+          </td>
+        </tr>
+        <tr>
+          <td>Certificate warning on the IP address</td>
+          <td>The default SSL certificate was not trusted by the browser.</td>
+          <td>
+            I created a DuckDNS hostname and used Certbot to obtain a trusted
+            certificate for that hostname.
+          </td>
+        </tr>
+      </table>
+
+      <h2>What I learned</h2>
+      <p>
+        The most useful lesson for me was that a successful
+        <code>tofu apply</code> is only one part of infrastructure management. I
+        also need to understand the plan before applying it, especially when a
+        change could replace a running machine. In this case, the plan exposed a
+        replacement caused by the cloud-init data change, and reviewing it
+        helped me avoid interrupting the site.
+      </p>
+      <p>
+        I also learned the difference between infrastructure OpenTofu manages
+        and changes made directly inside a VM. The public website and HTTPS
+        endpoint worked, but parts of the guest configuration and security-group
+        setup were still manual. To make the deployment fully reproducible, I
+        would bring those resources into code and test a complete
+        destroy-and-rebuild process on a temporary VM rather than risking the
+        running assignment server.
+      </p>
+      <div class="success">
+        <strong>Final result:</strong> The Week 7 VM remained active, the public
+        web page worked, and HTTPS was enabled for
+        <a href="https://week7-iac-cs.duckdns.org">week7-iac-cs.duckdns.org</a>.
+        I reviewed a user-data replacement plan and a destroy plan without
+        applying destructive actions to the working server. The remaining
+        improvement is to manage all network and guest configuration through
+        code so a rebuild can be tested safely and reproduced consistently.
+      </div>
+      <h2>Sources</h2>
+      <ul>
+        <li><a href="https://opentofu.org/docs/">OpenTofu documentation</a></li>
+        <li>
+          <a href="https://opentofu.org/docs/language/state/"
+            >OpenTofu state documentation</a
+          >
+        </li>
+        <li>
+          <a href="https://opentofu.org/docs/cli/commands/plan/"
+            >OpenTofu plan command</a
+          >
+        </li>
+        <li>
+          <a href="https://cloudinit.readthedocs.io/"
+            >cloud-init documentation</a
+          >
+        </li>
+        <li><a href="https://certbot.eff.org/">Certbot documentation</a></li>
+        <li>
+          <a href="https://letsencrypt.org/docs/"
+            >Let's Encrypt documentation</a
+          >
+        </li>
+      </ul>
+    </div>
+  </body>
+</html>
